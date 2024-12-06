@@ -1,74 +1,123 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import React, { useState } from "react";
+import { ScrollView } from "react-native";
+import { Box } from "@/components/ui/box";
+import { Text } from "@/components/ui/text";
+import { Button, ButtonText } from "@/components/ui/button";
+import { Pressable } from "@/components/ui/pressable";
+import { Icon, AddIcon, ChevronRightIcon, ArrowLeftIcon } from "@/components/ui/icon";
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+// Main Component
+export default function Home() {
+    const [buttonOpacity, setButtonOpacity] = useState(1);
 
-export default function HomeScreen() {
-  return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
-  );
+    const handleButtonPressIn = () => setButtonOpacity(0.6);
+    const handleButtonPressOut = () => setButtonOpacity(1);
+
+    const styles = {
+        headerContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        header: {
+            paddingVertical: 20,
+            fontSize: 20,
+            fontWeight: 600,
+        },
+        subheader: {
+            fontSize: 14,
+            marginBottom: 25,
+        },
+        container: {
+            backgroundColor: "#FBF9F1",
+            paddingTop: 50,
+            paddingBottom: 50,
+            paddingLeft: 30,
+            paddingRight: 30,
+            flexGrow: 1,
+        },
+        backButton: {
+            backgroundColor: "#92C7CF",
+            borderRadius: 10,
+            height: 60,
+            width: 60,
+            marginRight: 15,
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            paddingHorizontal: 20,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 2,
+            opacity: buttonOpacity,
+        },
+        backIcon: {
+            marginTop: -3,
+            color: "white",
+        },
+        cartContainer: {
+            backgroundColor: 'white',
+            borderRadius: 20,
+            padding: 30,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 2,
+        },
+        cartItemContainer: {
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 2,
+            padding: 20,
+            backgroundColor: 'green'
+        },
+        cartScrollable: {
+            // backgroundColor: 'red',
+        },
+        cartSummary: {
+            marginTop: 20,
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 2,
+            padding: 20,
+            backgroundColor: 'blue'
+        }
+
+
+    };
+
+    return (
+        <Box style={styles.container}>
+            <Box style={styles.headerContainer}>
+                <Button
+                    size="md"
+                    variant="solid"
+                    action="primary"
+                    style={styles.backButton}
+                    onPressIn={handleButtonPressIn}
+                    onPressOut={handleButtonPressOut}
+                >
+                    <Icon as={ArrowLeftIcon} size="2xl" style={styles.backIcon} />
+                </Button>
+                <Text style={styles.header}>(Title)Weekly Groceries</Text>     
+            </Box>
+
+            <Box style={styles.cartContainer}>
+                <ScrollView style={styles.cartScrollable}>
+                    <Box style={styles.cartItemContainer}>
+                        <Text>Something</Text>
+                    </Box>
+                    <Box style={styles.cartSummary}>
+                        <Text>Another Thing</Text>
+                    </Box>
+                </ScrollView>
+            </Box>
+        </Box>
+    );
 }
-
-const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
-  },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
-  },
-});

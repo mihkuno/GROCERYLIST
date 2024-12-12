@@ -5,6 +5,7 @@ import { ScrollView, TouchableOpacity, View } from "react-native";
 import { ArrowLeftIcon } from "@/components/ui/icon";
 import { Icon } from "@/components/ui/icon";
 import { Image } from "@/components/ui/image";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 // Main Component
 export default function Home() {
@@ -40,13 +41,13 @@ export default function Home() {
       shadowRadius: 3.84,
       elevation: 2,
     },
-    scrollContainer: {
+    container: {
       backgroundColor: "#FBF9F1",
       paddingTop: 50,
       paddingBottom: 50,
       paddingLeft: 30,
       paddingRight: 30,
-      flexGrow: 1,
+      height: '100%',
     },
     gridContainer: {
       padding: 10,
@@ -139,7 +140,8 @@ export default function Home() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <SafeAreaView style={styles.container}>
+    <ScrollView>
       {/* Header */}
 
       <Text style={styles.header}>Connected Stores</Text>
@@ -181,5 +183,6 @@ export default function Home() {
         {renderExpenseData()}
       </Box>
     </ScrollView>
+    </SafeAreaView>
   );
 }

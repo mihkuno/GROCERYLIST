@@ -175,14 +175,15 @@ export default function SignIn() {
                     onChangeText={handlePasswordChanged}
                     value={password} 
                 />
+                <Button variant="link" onPress={togglePasswordVisibility}>
+                    <Icon as={showPassword ? EyeOffIcon : EyeIcon} size="xl" style={styles.formIcon} />
+                </Button>
+
                 {password && (
                     <Button variant="link" onPress={clearPassword}>
                         <Icon as={CloseIcon} size="xl" style={styles.formIcon} />
                     </Button>
                 )}
-                <Button variant="link" onPress={togglePasswordVisibility}>
-                    <Icon as={showPassword ? EyeOffIcon : EyeIcon} size="xl" style={styles.formIcon} />
-                </Button>
             </Input>
 
             <Button 

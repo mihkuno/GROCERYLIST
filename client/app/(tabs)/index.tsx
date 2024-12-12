@@ -16,6 +16,8 @@ import {
   AlertDialogFooter,
   AlertDialogBody,
 } from "@/components/ui/alert-dialog";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router } from "expo-router";
 
 // Grocery list data
 const initialGroceryLists = [
@@ -43,7 +45,10 @@ export default function Index() {
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [targetItemIdToEdit, setTargetItemIdToEdit] = useState(0);
 
-  const handleButtonPressIn = () => setButtonOpacity(0.6);
+  const handleButtonPressIn = () => {
+    setButtonOpacity(0.6);
+    router.push('/(input)/grocery');
+  };
   const handleButtonPressOut = () => setButtonOpacity(1);
 
   const handleDelete = () => {
@@ -66,13 +71,13 @@ export default function Index() {
       fontSize: 16,
       marginBottom: 25,
     },
-    scrollContainer: {
+    container: {
       backgroundColor: "#FBF9F1",
       paddingTop: 50,
       paddingBottom: 50,
       paddingLeft: 30,
       paddingRight: 30,
-      flexGrow: 1,
+      height: '100%'
     },
     createListButton: {
       backgroundColor: "#92C7CF",
@@ -155,7 +160,8 @@ export default function Index() {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.scrollContainer}>
+    <SafeAreaView style={styles.container}>
+    <ScrollView>
       <Text style={styles.header}>My Groceries</Text>
       <Text style={styles.subheader}>Create and manage your shopping lists</Text>
 
@@ -212,5 +218,6 @@ export default function Index() {
         </AlertDialog>
       </Box>
     </ScrollView>
+    </SafeAreaView>
   );
 }

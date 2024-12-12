@@ -3,6 +3,7 @@ import { TextInput, TouchableOpacity, StyleSheet, View } from 'react-native';
 import { Box } from '@/components/ui/box';
 import { Text } from '@/components/ui/text';
 import { Icon, CloseIcon, CheckIcon } from '@/components/ui/icon';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const Index: React.FC = () => {
   const [editingItem, setEditingItem] = useState<string | null>(null);
@@ -38,9 +39,9 @@ const Index: React.FC = () => {
   };
 
   return (
-    <Box style={styles.container}>
+    <SafeAreaView style={styles.container}>
       <Box style={styles.listContainer}>
-        <Text style={styles.listTitle}>User Profile</Text>
+        <Text style={styles.listTitle}>My Profile</Text>
 
         {/* Editable Items */}
         {['name', 'email', 'password'].map((field) => (
@@ -76,7 +77,7 @@ const Index: React.FC = () => {
           <Text style={styles.logoutButtonText}>Logout</Text>
         </TouchableOpacity>
       </Box>
-    </Box>
+    </SafeAreaView>
   );
 };
 
@@ -86,8 +87,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#FBF9F1',
     paddingVertical: 50,
     paddingHorizontal: 30,
-    flexGrow: 1,
     justifyContent: 'center',
+    height: '100%'
   },
   listContainer: {
     backgroundColor: 'white',
@@ -122,11 +123,11 @@ const styles = StyleSheet.create({
   },
   textInput: {
     flex: 1,
+    height: 40, // Fixed height to prevent resizing
     borderWidth: 1,
     borderColor: '#92C7CF',
     borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    paddingHorizontal: 10, // Padding for better usability
     marginRight: 10,
   },
   row: {

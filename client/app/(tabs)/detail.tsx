@@ -50,15 +50,15 @@ export default function Home() {
     const handleCheckboxChange = (index) => {
         const updatedItems = [...data.items];
         updatedItems[index].isChecked = !updatedItems[index].isChecked;
-
+    
         // Count the number of checked items
         const itemsCompleted = updatedItems.filter(item => item.isChecked).length;
-
+    
         // Calculate the total of checked items
         const total = updatedItems
             .filter(item => item.isChecked)
-            .reduce((sum, item) => sum + parseFloat(item.price.slice(1)), 0);
-
+            .reduce((sum, item) => sum + parseFloat(item.price), 0); // Directly parse price as a number
+    
         setData({
             ...data,
             items: updatedItems,
@@ -73,15 +73,11 @@ export default function Home() {
     const styles = {
         headerContainer: {
             flexDirection: "row",
-            justifyContent: "space-between", // Keeps the back button left
             alignItems: "center",
             paddingVertical: 10,
-            paddingHorizontal: 1,
         },
         headerTitleContainer: {
-            position: "absolute",
-            left: "50%",
-            transform: [{ translateX: -60 }], // Centers the title by adjusting the offset
+            
         },
         backButton: {
             backgroundColor: "#92C7CF",
@@ -94,32 +90,44 @@ export default function Home() {
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.25,
             shadowRadius: 3.84,
-            elevation: 2,
-            
-            
+            elevation: 2,  
         },
         header: {
             lineHeight: 30,
-            fontSize: 25,
+            fontSize: 20,
             fontWeight: "600",
         },
-        scrollContainer: {
+        container: {
             backgroundColor: "#FBF9F1",
             paddingTop: 50,
             paddingBottom: 50,
             paddingHorizontal: 30,
             flexGrow: 1,
         },
-        cardContainer: {
+        itemContainer: {
             backgroundColor: "white",
             padding: 22,
             marginTop: 20,
-            borderRadius: 20,
+            borderRadius: 20,            
             shadowColor: "#000",
             shadowOffset: { width: 0, height: 2 },
             shadowOpacity: 0.25,
             shadowRadius: 3.84,
             elevation: 2,
+            minHeight: 270,
+            height: "57%",
+        },
+        detailContainer: {
+            backgroundColor: "white",
+            padding: 22,
+            marginTop: 20,
+            borderRadius: 20,            
+            shadowColor: "#000",
+            shadowOffset: { width: 0, height: 2 },
+            shadowOpacity: 0.25,
+            shadowRadius: 3.84,
+            elevation: 2,
+            minHeight: 150,
         },
         itemRow: {
             flexDirection: "row",
@@ -163,7 +171,7 @@ export default function Home() {
     };
 
     return (
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Box style={styles.container}>
             {/* Header */}
             <Box style={styles.headerContainer}>
                 <TouchableOpacity
@@ -180,9 +188,10 @@ export default function Home() {
             </Box>
 
             {/* Items Card */}
-            <Box style={styles.cardContainer}>
+            <Box style={styles.itemContainer}>
                 <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>Items</Text>
 
+                <ScrollView>
                 {data.items.map((item, index) => (
                     <Box style={styles.itemRow} key={index}>
                         <Checkbox
@@ -198,6 +207,7 @@ export default function Home() {
                         <Text style={styles.priceText}>₱{item.price}</Text>
                     </Box>
                 ))}
+                </ScrollView>
 
                 <Box style={styles.totalRow}>
                     <Text style={{ fontSize: 16, fontWeight: "600" }}>Total</Text>
@@ -206,7 +216,7 @@ export default function Home() {
             </Box>
 
             {/* Details Card */}
-            <Box style={styles.cardContainer}>
+            <Box style={styles.detailContainer}>
                 <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>List Details</Text>
                 <Box style={styles.detailRow}>
                     <Text style={styles.detailLabel}>Created</Text>
@@ -221,6 +231,6 @@ export default function Home() {
                     <Text style={styles.detailValue}>{data.details.itemsCompleted} / {data.items.length}</Text>
                 </Box>
             </Box>
-        </ScrollView>
+        </Box>
     );
 }

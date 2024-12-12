@@ -4,6 +4,7 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Input, InputField } from "@/components/ui/input"
 import { Icon, EyeOffIcon, EyeIcon, CloseIcon } from '@/components/ui/icon';
+import { AntDesign } from '@expo/vector-icons'; // Import Google icon from AntDesign
 
 export default function SignIn() {
 
@@ -11,9 +12,9 @@ export default function SignIn() {
     const [password, setPassword] = useState('');
     const [showErase, setShowErase] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [isLoginPressed, setIsLoginPressed] = useState(false); // State for login button press
-    const [isGooglePressed, setIsGooglePressed] = useState(false); // State for Google button press
-    const [isSignUpPressed, setIsSignUpPressed] = useState(false); // State for Sign Up button press
+    const [isLoginPressed, setIsLoginPressed] = useState(false); 
+    const [isGooglePressed, setIsGooglePressed] = useState(false); 
+    const [isSignUpPressed, setIsSignUpPressed] = useState(false); 
 
     const emailInput = createRef();
     const passwordInput = createRef();
@@ -50,13 +51,13 @@ export default function SignIn() {
             height: '100%',
         },
         formContainer: {
-            backgroundColor: '#FBF9F1',
+            backgroundColor: 'white',
             borderRadius: 10,
             padding: 35,
             justifyContent: 'center',
         },
         formInput: {
-            backgroundColor: '#E3E1D9',
+            backgroundColor: '#f5f5f5',
             borderRadius: 10,
             marginTop: 10,
             height: 50,
@@ -71,12 +72,20 @@ export default function SignIn() {
             borderRadius: 10,
             marginTop: 15,
             height: 50,
-            opacity: isLoginPressed ? 0.6 : 1, // Change opacity for login button
+            opacity: isLoginPressed ? 0.6 : 1,
         },
         googleButton: {
+            backgroundColor: '#f5f5f5',
+            borderColor: '#949494',
             borderRadius: 10,
             height: 50,
-            opacity: isGooglePressed ? 0.6 : 1, // Change opacity for Google button
+            opacity: isGooglePressed ? 0.6 : 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
+        googleButtonText: {
+            color: '#949494',
+            
         },
         signInText: {
             textAlign: 'center',
@@ -91,7 +100,7 @@ export default function SignIn() {
         signUpButton: {            
             fontWeight: 'bold', 
             color: '#92C7CF',
-            opacity: isSignUpPressed ? 0.6 : 1, // Change opacity for Sign Up button
+            opacity: isSignUpPressed ? 0.6 : 1,
         },
         signUpContainer: {
             flexDirection: 'row',
@@ -117,7 +126,11 @@ export default function SignIn() {
     const clearEmail = () => {
         setEmail('');
         setShowErase(false);
-        emailInput.current?.focus(); // Optionally focus the input after clearing
+        emailInput.current?.focus();
+    }
+
+    const clearPassword = () => {
+        setPassword('');
     }
 
     const handleButtonPressIn = (button: string) => {
@@ -162,6 +175,11 @@ export default function SignIn() {
                     onChangeText={handlePasswordChanged}
                     value={password} 
                 />
+                {password && (
+                    <Button variant="link" onPress={clearPassword}>
+                        <Icon as={CloseIcon} size="xl" style={styles.formIcon} />
+                    </Button>
+                )}
                 <Button variant="link" onPress={togglePasswordVisibility}>
                     <Icon as={showPassword ? EyeOffIcon : EyeIcon} size="xl" style={styles.formIcon} />
                 </Button>
@@ -188,7 +206,8 @@ export default function SignIn() {
                 onPressIn={() => handleButtonPressIn('google')} 
                 onPressOut={() => handleButtonPressOut('google')}
             >
-                <ButtonText>Continue with Google</ButtonText>
+                <AntDesign name="google" size={24} color="#949494" style={{ marginRight: 10 }} />
+                <ButtonText style={styles.googleButtonText}>Continue with Google</ButtonText>
             </Button>
 
             <Box style={styles.signUpContainer}>

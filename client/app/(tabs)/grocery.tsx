@@ -65,7 +65,7 @@ const styles = {
         shadowRadius: 3.84,
         elevation: 2,
         minHeight: 270,
-        height: "55%",
+        height: "52%",
     },
     addItemContainer: {
         flexDirection: "row",
@@ -253,14 +253,14 @@ function AddItemButton({ onSave }) {
             </Input>
           </AlertDialogBody>
           <AlertDialogFooter className="">
-            <Button
+            {/* <Button
               variant="outline"
               action="secondary"
               onPress={handleClose}
               size="sm"
             >
               <ButtonText>Cancel</ButtonText>
-            </Button>
+            </Button> */}
             <Button size="sm" onPress={handleSave} className="bg-[#92C7CF]">
               <ButtonText>Save</ButtonText>
             </Button>
@@ -335,7 +335,7 @@ function EditItemDialog({ showEditDialog, showEditDialogCallback, editItemData, 
                     </Button>
 
                     <Box style={{flexDirection: 'row'}}>
-                        <Button
+                        {/* <Button
                             variant="outline"
                             action="secondary"
                             size="sm"
@@ -343,7 +343,7 @@ function EditItemDialog({ showEditDialog, showEditDialogCallback, editItemData, 
                         >
                             <ButtonText>Cancel</ButtonText>
                         </Button>
-                        
+                         */}
                         <Button
                             size="sm"
                             onPress={handleSave}

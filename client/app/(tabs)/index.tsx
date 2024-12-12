@@ -37,7 +37,7 @@ const initialGroceryLists = [
 ];
 
 // Main Component
-export default function Home() {
+export default function Index() {
   const [buttonOpacity, setButtonOpacity] = useState(1);
   const [groceryLists, setGroceryLists] = useState(initialGroceryLists);
   const [showEditDialog, setShowEditDialog] = useState(false);
@@ -60,7 +60,7 @@ export default function Home() {
     header: {
       fontSize: 32,
       fontWeight: 600,
-      paddingTop: 40,
+      paddingTop: 60,
     },
     subheader: {
       fontSize: 16,
@@ -119,6 +119,7 @@ export default function Home() {
       marginTop: 10,
       borderRadius: 10,
       borderWidth: 1,
+      borderColor: '#92C7CF',
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
@@ -171,7 +172,6 @@ export default function Home() {
       </Button>
 
       <Box style={styles.listContainer}>
-        <Text style={styles.listTitle}>My Lists</Text>
         {groceryLists.map((list) => (
           <TouchableOpacity
             key={list.id}
@@ -203,15 +203,6 @@ export default function Home() {
               </Button>
 
               <Box style={styles.actionDialogButton}>
-                <Button
-                  variant="outline"
-                  action="secondary"
-                  size="sm"
-                  style={styles.cancelDialogButton}
-                  onPress={handleCancel}
-                >
-                  <ButtonText>Cancel</ButtonText>
-                </Button>
                 <Button size="sm" style={styles.editDialogButton}>
                   <ButtonText>Edit</ButtonText>
                 </Button>

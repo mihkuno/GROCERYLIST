@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useContext } from "react";
 import { ScrollView, TouchableOpacity } from "react-native";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
@@ -6,6 +6,7 @@ import { Button, ButtonText } from "@/components/ui/button";
 import { Pressable } from "@/components/ui/pressable";
 import { Icon, AddIcon, ChevronRightIcon } from "@/components/ui/icon";
 import { Heading } from "@/components/ui/heading";
+import { SessionContext } from "@/provider/SessionProvider";
 
 import {
   AlertDialog,
@@ -19,79 +20,27 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 
-// Grocery list data
-const initialGroceryLists = [
-  {
-    id: 1,
-    title: "Weekly Groceries",
-    subtitle: "15 items • Created Today",
-  },
-  {
-    id: 2,
-    title: "Monthly Supplies",
-    subtitle: "8 items • Created 4 days ago",
-  },
-  {
-    id: 3,
-    title: "Yearly Supplies",
-    subtitle: "244 items • Created 2 years ago",
-  },{
-    id: 4,
-    title: "Yearly Supplies",
-    subtitle: "244 items • Created 2 years ago",
-  },
-  {
-    id: 5,
-    title: "Yearly Supplies",
-    subtitle: "244 items • Created 2 years ago",
-  },
-  {
-    id: 6,
-    title: "Yearly Supplies",
-    subtitle: "244 items • Created 2 years ago",
-  },
-  {
-    id: 7,
-    title: "Yearly Supplies",
-    subtitle: "244 items • Created 2 years ago",
-  },
-  {
-    id: 8,
-    title: "Yearly Supplies",
-    subtitle: "244 items • Created 2 years ago",
-  },
-  {
-    id: 9,
-    title: "Yearly Supplies",
-    subtitle: "244 items • Created 2 years ago",
-  },
-  {
-    id: 10,
-    title: "Yearly Supplies",
-    subtitle: "244 items • Created 2 years ago",
-  },
-  {
-    id: 11,
-    title: "Yearly Supplies",
-    subtitle: "244 items • Created 2 years ago",
-  },
-  {
-    id: 12,
-    title: "Yearly Supplies",
-    subtitle: "244 items • Created 2 years ago",
-  },
-];
+
+// const initialGroceryLists = [
+//   {
+//     id: 1,
+//     title: "Weekly Groceries",
+//     subtitle: "15 items • Created Today",
+//   },
+// ];
 
 // Main Component
 export default function Home() {
   const [buttonOpacity, setButtonOpacity] = useState(1);
-  const [groceryLists, setGroceryLists] = useState(initialGroceryLists);
+  const [groceryLists, setGroceryLists] = useState([]);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [targetItemIdToEdit, setTargetItemIdToEdit] = useState({
     id: 0,
     title: "",
     subtitle: "",
   });
+
+  const { getGroceryLists } = useContext(SessionContext);
 
   const handleDelete = () => {
     // Remove the list with the given ID
@@ -210,6 +159,14 @@ export default function Home() {
             console.log('Screen is in focus');
             // Place your logic here (e.g., analytics tracking, data fetching)
 
+
+            (async () => {
+                const {lists} = await getGroceryLists();
+                setGroceryLists(lists);
+
+                console.log('Grocery lists:', lists);
+            })();
+
             return () => {
                 console.log('Screen is out of focus');
                 // Cleanup logic if needed
@@ -234,26 +191,37 @@ export default function Home() {
 
       <Box style={styles.listContainer}>
         <ScrollView>
-        {groceryLists.map((list) => (
-          <TouchableOpacity
-            key={list.id}
-            style={styles.itemContainer}
-            onLongPress={() => {
-              setTargetItemIdToEdit(list);
-              setShowEditDialog(true);
-            }}
-            onPress={() => router.push({
-                    pathname: '/screens/detail',
-                    params: list
-                })}
-          >
-            <Box>
-              <Text style={styles.itemTitle}>{list.title}</Text>
-              <Text style={styles.itemSubtitle}>{list.subtitle}</Text>
-            </Box>
-            <Icon as={ChevronRightIcon} />
-          </TouchableOpacity>
-        ))}
+    
+    
+            {
+                groceryLists.length === 0 ? (
+                    <Text>No grocery lists found</Text>
+                ) : (
+                    groceryLists.map((list) => (
+                    <TouchableOpacity
+                        key={list.id}
+                        style={styles.itemContainer}
+                        onLongPress={() => {
+                        setTargetItemIdToEdit(list);
+                        setShowEditDialog(true);
+                        }}
+                        onPress={() =>
+                        router.push({
+                            pathname: '/screens/detail',
+                            params: { list }, // Ensure params is passed as an object
+                        })
+                        }
+                    >
+                        <Box>
+                        <Text style={styles.itemTitle}>{list.title}</Text>
+                        <Text style={styles.itemSubtitle}>{list.subtitle}</Text>
+                        </Box>
+                        <Icon as={ChevronRightIcon} />
+                    </TouchableOpacity>
+                    ))
+                )
+            }
+
 
         </ScrollView>
         <AlertDialog isOpen={showEditDialog} onClose={handleCancel} size="md">

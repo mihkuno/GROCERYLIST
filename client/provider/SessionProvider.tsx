@@ -24,6 +24,56 @@ export const SessionProvider = ({ children }) => {
     loadSession();
   }, []);
 
+
+  const getGroceryLists = async () => {
+
+    if (!session) {
+      alert('No session found!');
+      return;
+    }
+
+    try {
+      const response = await axios.post('http://192.168.1.5:3000/lists', {
+        id: session.id,
+        name: session.name,
+        email: session.email,
+        password: session.password
+      });
+
+        return response.data;
+    }
+    catch (error) {
+      if (error.response) {
+        alert(JSON.stringify(error.response.data.error));
+      } else {
+        alert(JSON.stringify(error));
+      }
+    }
+    }
+
+
+  const createAccount = async (name, email, password, confirmPassword) => {
+    try {
+        const response = await axios.post('http://192.168.1.5:3000/users/create', {
+          name: name,
+          email: email,
+          password: password,
+          confirmPassword: confirmPassword, // Ensure this matches the password
+        });
+    
+        console.log('User created:', response.data);
+        saveSession({email, password});
+      } 
+      
+      catch (error) {
+        if (error.response) {
+          alert(JSON.stringify(error.response.data.error));
+        } else {
+          alert(JSON.stringify(error));
+        }
+    }
+}
+
   const validateSession = async (session) => {
     // check if it has the required fields
     if (!('email' in session && 'password' in session)) {
@@ -40,7 +90,11 @@ export const SessionProvider = ({ children }) => {
       } 
       
       catch (error) {
-        alert(`Login failed ${JSON.stringify(error.response?.data.error || error.message)}` );
+        if (error.response) {
+            alert(JSON.stringify(error.response.data.error));
+          } else {
+            alert(JSON.stringify(error));
+          }
         return false;
       }
 
@@ -75,7 +129,7 @@ export const SessionProvider = ({ children }) => {
   };
 
   return (
-    <SessionContext.Provider value={{ session, saveSession, clearSession }}>
+    <SessionContext.Provider value={{ session, saveSession, clearSession, createAccount, getGroceryLists }}>
       {children}
     </SessionContext.Provider>
   );

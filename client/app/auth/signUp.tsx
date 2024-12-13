@@ -1,4 +1,4 @@
-import React, { useState, createRef } from 'react';
+import React, { useState, createRef, useContext } from 'react';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
@@ -6,6 +6,8 @@ import { Input, InputField } from "@/components/ui/input";
 import { Icon, EyeOffIcon, EyeIcon, CloseIcon } from '@/components/ui/icon';
 import { SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
 import { router } from 'expo-router';
+import { SessionContext } from '@/provider/SessionProvider';
+import axios from 'axios';
 
 export default function SignUp() {
     const [email, setEmail] = useState('');
@@ -16,12 +18,13 @@ export default function SignUp() {
     const [showEraseName, setShowEraseName] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
     
     const nameInput = createRef();
     const emailInput = createRef();
     const passwordInput = createRef();
     const confirmPasswordInput = createRef();
+
+    const { createAccount } = useContext(SessionContext);
 
     const styles = {
         brandName: {
@@ -155,6 +158,7 @@ export default function SignUp() {
         confirmPasswordInput.current?.focus();
     };
 
+
     return (
         <Box style={styles.container}>
             <Text style={styles.brandName}>GroceryList</Text>
@@ -231,6 +235,7 @@ export default function SignUp() {
                 <TouchableOpacity
                     style={styles.signInButton}
                     activeOpacity={0.6}
+                    onPress={() => createAccount(name, email, password, confirmPassword)}
                 >
                     <Text style={styles.signInButtonText}>Create Account</Text>
                 </TouchableOpacity>

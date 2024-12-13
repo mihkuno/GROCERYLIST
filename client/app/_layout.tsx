@@ -1,42 +1,35 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
+import { DarkTheme, DefaultTheme, ThemeProvider, useTheme } from '@react-navigation/native';
 import "@/global.css";
 import { GluestackUIProvider } from "@/components/ui/gluestack-ui-provider";
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { Stack, useFocusEffect } from 'expo-router';
+import { Text } from "@/components/ui/text";
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
+import { useEffect, useState, useContext } from 'react';
 import 'react-native-reanimated';
-
-import { useColorScheme } from '@/hooks/useColorScheme';
+import { SessionProvider, SessionContext } from '../provider/SessionProvider';
 
 // Prevent the splash screen from auto-hiding before asset loading is complete.
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
+  const [isReady, setIsReady] = useState(false);
 
+  // Hide the splash screen once fonts are loaded
   useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
+    SplashScreen.hideAsync();
+    setIsReady(true);  // Mark the app as ready
+  }, []);
 
-  if (!loaded) {
-    return null;
-  }
+  if (!isReady) return null;  // Avoid rendering before the app is ready
 
   return (
-    <GluestackUIProvider mode="light"><ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-        <Stack>
-          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
+    <GluestackUIProvider mode="light">
+      <SessionProvider>
         <StatusBar style="auto" />
-      </ThemeProvider>
-      </GluestackUIProvider>
+        <Stack screenOptions={{ headerShown: false, animation:'fade_from_bottom',  }} />
+      </SessionProvider>
+    </GluestackUIProvider>
   );
 }

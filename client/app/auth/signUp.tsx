@@ -4,18 +4,21 @@ import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Input, InputField } from "@/components/ui/input";
 import { Icon, EyeOffIcon, EyeIcon, CloseIcon } from '@/components/ui/icon';
+import { SafeAreaView, ScrollView, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
 
 export default function SignUp() {
     const [email, setEmail] = useState('');
+    const [name, setName] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [showErase, setShowErase] = useState(false);
+    const [showEraseEmail, setShowEraseEmail] = useState(false);
+    const [showEraseName, setShowEraseName] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-    const [isLoginPressed, setIsLoginPressed] = useState(false);
-    const [isGooglePressed, setIsGooglePressed] = useState(false);
-    const [isSignUpPressed, setIsSignUpPressed] = useState(false);
 
+    
+    const nameInput = createRef();
     const emailInput = createRef();
     const passwordInput = createRef();
     const confirmPasswordInput = createRef();
@@ -41,12 +44,9 @@ export default function SignUp() {
         },
         container: {
             backgroundColor: '#92C7CF',
-            flex: 1,
             justifyContent: 'center',
-            paddingTop: 50,
-            paddingBottom: 50,
-            paddingLeft: 15,
-            paddingRight: 15,
+            paddingVertical: '25%',
+            paddingHorizontal: 20,
             height: '100%',
         },
         formContainer: {
@@ -71,12 +71,17 @@ export default function SignUp() {
             borderRadius: 10,
             marginTop: 15,
             height: 50,
-            opacity: isLoginPressed ? 0.6 : 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        signInButtonText: {
+            fontSize: 16,
+            fontWeight: 800,
+            color: 'white',
         },
         googleButton: {
             borderRadius: 10,
             height: 50,
-            opacity: isGooglePressed ? 0.6 : 1,
         },
         signInText: {
             textAlign: 'center',
@@ -91,7 +96,6 @@ export default function SignUp() {
         signUpButton: {
             fontWeight: 'bold',
             color: '#92C7CF',
-            opacity: isSignUpPressed ? 0.6 : 1,
         },
         signUpContainer: {
             flexDirection: 'row',
@@ -103,7 +107,13 @@ export default function SignUp() {
 
     const handleEmailChanged = (text: string) => {
         setEmail(text);
-        setShowErase(text.length > 0);
+        setShowEraseEmail(text.length > 0);
+    };
+
+    
+    const handleNameChanged = (text: string) => {
+        setName(text);
+        setShowEraseName(text.length > 0);
     };
 
     const handlePasswordChanged = (text: string) => {
@@ -124,8 +134,15 @@ export default function SignUp() {
 
     const clearEmail = () => {
         setEmail('');
-        setShowErase(false);
+        setShowEraseEmail(false);
         emailInput.current?.focus();
+    };
+
+    
+    const clearName = () => {
+        setName('');
+        setShowEraseName(false);
+        nameInput.current?.focus();
     };
 
     const clearPassword = () => {
@@ -138,18 +155,6 @@ export default function SignUp() {
         confirmPasswordInput.current?.focus();
     };
 
-    const handleButtonPressIn = (button: string) => {
-        if (button === 'login') setIsLoginPressed(true);
-        if (button === 'google') setIsGooglePressed(true);
-        if (button === 'signup') setIsSignUpPressed(true);
-    };
-
-    const handleButtonPressOut = (button: string) => {
-        if (button === 'login') setIsLoginPressed(false);
-        if (button === 'google') setIsGooglePressed(false);
-        if (button === 'signup') setIsSignUpPressed(false);
-    };
-
     return (
         <Box style={styles.container}>
             <Text style={styles.brandName}>GroceryList</Text>
@@ -159,18 +164,34 @@ export default function SignUp() {
 
                 <Input style={styles.formInput} variant="outline" size="md" isDisabled={false} isInvalid={false} isReadOnly={false}>
                     <InputField
+                        ref={nameInput}
+                        placeholder="Username"
+                        onChangeText={handleNameChanged}
+                        value={name}
+                    />
+                    {showEraseName && (
+                        <Button variant="link" onPress={clearName}>
+                            <Icon as={CloseIcon} size="xl" style={styles.formIcon} />
+                        </Button>
+                    )}
+                </Input>
+
+
+                <Input style={styles.formInput} variant="outline" size="md" isDisabled={false} isInvalid={false} isReadOnly={false}>
+                    <InputField
                         ref={emailInput}
                         placeholder="Email"
                         onChangeText={handleEmailChanged}
                         value={email}
                     />
-                    {showErase && (
+                    {showEraseEmail && (
                         <Button variant="link" onPress={clearEmail}>
                             <Icon as={CloseIcon} size="xl" style={styles.formIcon} />
                         </Button>
                     )}
                 </Input>
 
+                
                 <Input style={styles.formInput} variant="outline" size="md" isDisabled={false} isInvalid={false} isReadOnly={false}>
                     <InputField
                         ref={passwordInput}
@@ -207,27 +228,23 @@ export default function SignUp() {
                     )}
                 </Input>
 
-                <Button
-                    size="xl"
-                    variant="solid"
-                    action="primary"
+                <TouchableOpacity
                     style={styles.signInButton}
-                    onPressIn={() => handleButtonPressIn('login')}
-                    onPressOut={() => handleButtonPressOut('login')}
+                    activeOpacity={0.6}
                 >
-                    <ButtonText>Create Account</ButtonText>
-                </Button>
+                    <Text style={styles.signInButtonText}>Create Account</Text>
+                </TouchableOpacity>
 
                 <Box style={styles.signUpContainer}>
                     <Text style={styles.signUpText}>Already have an account? </Text>
-                    <Button
+                    <TouchableOpacity
                         style={styles.signUpButton}
-                        onPressIn={() => handleButtonPressIn('signup')}
-                        onPressOut={() => handleButtonPressOut('signup')}
+                        onPress={() => router.replace('/auth/signIn')}
                         variant="link"
+                        activeOpacity={0.6}
                     >
-                        <Text style={styles.signUpButton}>Sign In Here</Text>
-                    </Button>
+                        <Text style={styles.signUpButton} >Sign In Here</Text>
+                    </TouchableOpacity>
                 </Box>
             </Box>
         </Box>

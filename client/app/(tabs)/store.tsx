@@ -43,10 +43,8 @@ export default function Home() {
     },
     container: {
       backgroundColor: "#FBF9F1",
-      paddingTop: 50,
-      paddingBottom: 50,
-      paddingLeft: 30,
-      paddingRight: 30,
+      paddingVertical: '30%',
+      paddingHorizontal: 30,
       height: '100%',
     },
     gridContainer: {

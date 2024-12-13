@@ -5,6 +5,8 @@ import { Text } from "@/components/ui/text";
 import { Icon, ArrowLeftIcon } from "@/components/ui/icon";
 import { Checkbox, CheckboxIndicator, CheckboxIcon, CheckboxLabel } from "@/components/ui/checkbox";
 import { CheckIcon } from "@/components/ui/icon";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router, useLocalSearchParams } from "expo-router";
 
 // Data object for items and details
 const initialData = {
@@ -44,7 +46,10 @@ const initialData = {
 };
 
 export default function Home() {
-    const [data, setData] = useState(initialData);
+
+    const targetItem = useLocalSearchParams();
+
+    const [data, setData] = useState( 'title' in targetItem ? {...initialData, headerTitle: targetItem.title} : initialData);
     const [isPressed, setIsPressed] = useState(false);
 
     const handleCheckboxChange = (index) => {
@@ -74,7 +79,6 @@ export default function Home() {
         headerContainer: {
             flexDirection: "row",
             alignItems: "center",
-            paddingVertical: 10,
         },
         headerTitleContainer: {
             
@@ -99,10 +103,10 @@ export default function Home() {
         },
         container: {
             backgroundColor: "#FBF9F1",
-            paddingTop: 50,
-            paddingBottom: 50,
-            paddingHorizontal: 30,
-            flexGrow: 1,
+        },
+        scrollView: {
+            height: "100%",
+            padding: 20,
         },
         itemContainer: {
             backgroundColor: "white",
@@ -114,8 +118,6 @@ export default function Home() {
             shadowOpacity: 0.25,
             shadowRadius: 3.84,
             elevation: 2,
-            minHeight: 270,
-            height: "57%",
         },
         detailContainer: {
             backgroundColor: "white",
@@ -127,7 +129,7 @@ export default function Home() {
             shadowOpacity: 0.25,
             shadowRadius: 3.84,
             elevation: 2,
-            minHeight: 150,
+            marginBottom: 50,
         },
         itemRow: {
             flexDirection: "row",
@@ -171,14 +173,15 @@ export default function Home() {
     };
 
     return (
-        <Box style={styles.container}>
+        <SafeAreaView style={styles.container}>
+        <ScrollView style={styles.scrollView}>
             {/* Header */}
             <Box style={styles.headerContainer}>
                 <TouchableOpacity
                     style={styles.backButton}
                     activeOpacity={0.5}
-                    onPressIn={() => setIsPressed(true)}
-                    onPressOut={() => setIsPressed(false)}
+                    onPressIn={() => router.back()}
+                    // onPressOut={() => setIsPressed(false)}
                 >
                     <Icon as={ArrowLeftIcon} size="xl" color="white" />
                 </TouchableOpacity>
@@ -191,7 +194,6 @@ export default function Home() {
             <Box style={styles.itemContainer}>
                 <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>Items</Text>
 
-                <ScrollView>
                 {data.items.map((item, index) => (
                     <Box style={styles.itemRow} key={index}>
                         <Checkbox
@@ -207,7 +209,6 @@ export default function Home() {
                         <Text style={styles.priceText}>₱{item.price}</Text>
                     </Box>
                 ))}
-                </ScrollView>
 
                 <Box style={styles.totalRow}>
                     <Text style={{ fontSize: 16, fontWeight: "600" }}>Total</Text>
@@ -231,6 +232,7 @@ export default function Home() {
                     <Text style={styles.detailValue}>{data.details.itemsCompleted} / {data.items.length}</Text>
                 </Box>
             </Box>
-        </Box>
+        </ScrollView>
+        </SafeAreaView>
     );
 }

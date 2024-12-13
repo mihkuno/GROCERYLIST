@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { ScrollView, TouchableOpacity } from "react-native";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
@@ -17,7 +17,7 @@ import {
   AlertDialogBody,
 } from "@/components/ui/alert-dialog";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router } from "expo-router";
+import { router, useFocusEffect } from "expo-router";
 
 // Grocery list data
 const initialGroceryLists = [
@@ -35,25 +35,67 @@ const initialGroceryLists = [
     id: 3,
     title: "Yearly Supplies",
     subtitle: "244 items • Created 2 years ago",
+  },{
+    id: 4,
+    title: "Yearly Supplies",
+    subtitle: "244 items • Created 2 years ago",
+  },
+  {
+    id: 5,
+    title: "Yearly Supplies",
+    subtitle: "244 items • Created 2 years ago",
+  },
+  {
+    id: 6,
+    title: "Yearly Supplies",
+    subtitle: "244 items • Created 2 years ago",
+  },
+  {
+    id: 7,
+    title: "Yearly Supplies",
+    subtitle: "244 items • Created 2 years ago",
+  },
+  {
+    id: 8,
+    title: "Yearly Supplies",
+    subtitle: "244 items • Created 2 years ago",
+  },
+  {
+    id: 9,
+    title: "Yearly Supplies",
+    subtitle: "244 items • Created 2 years ago",
+  },
+  {
+    id: 10,
+    title: "Yearly Supplies",
+    subtitle: "244 items • Created 2 years ago",
+  },
+  {
+    id: 11,
+    title: "Yearly Supplies",
+    subtitle: "244 items • Created 2 years ago",
+  },
+  {
+    id: 12,
+    title: "Yearly Supplies",
+    subtitle: "244 items • Created 2 years ago",
   },
 ];
 
 // Main Component
-export default function Index() {
+export default function Home() {
   const [buttonOpacity, setButtonOpacity] = useState(1);
   const [groceryLists, setGroceryLists] = useState(initialGroceryLists);
   const [showEditDialog, setShowEditDialog] = useState(false);
-  const [targetItemIdToEdit, setTargetItemIdToEdit] = useState(0);
-
-  const handleButtonPressIn = () => {
-    setButtonOpacity(0.6);
-    router.push('/(input)/grocery');
-  };
-  const handleButtonPressOut = () => setButtonOpacity(1);
+  const [targetItemIdToEdit, setTargetItemIdToEdit] = useState({
+    id: 0,
+    title: "",
+    subtitle: "",
+  });
 
   const handleDelete = () => {
     // Remove the list with the given ID
-    setGroceryLists(groceryLists.filter((list) => list.id !== targetItemIdToEdit));
+    setGroceryLists(groceryLists.filter((list) => list.id !== targetItemIdToEdit.id));
     setShowEditDialog(false); // Close the dialog
   };
 
@@ -61,6 +103,7 @@ export default function Index() {
     setShowEditDialog(false); // Simply close the dialog without doing anything
   };
 
+  
   const styles = {
     header: {
       fontSize: 32,
@@ -73,8 +116,7 @@ export default function Index() {
     },
     container: {
       backgroundColor: "#FBF9F1",
-      paddingTop: 50,
-      paddingBottom: 50,
+      paddingVertical: '30%',
       paddingLeft: 30,
       paddingRight: 30,
       height: '100%'
@@ -92,14 +134,15 @@ export default function Index() {
       shadowOpacity: 0.25,
       shadowRadius: 3.84,
       elevation: 2,
-      opacity: buttonOpacity,
     },
     createListText: {
       fontSize: 18,
+      fontWeight: 600,
       color: "white",
     },
     createListIcon: {
       marginTop: -3,
+      marginRight: 5,
       color: "white",
     },
     listContainer: {
@@ -112,6 +155,7 @@ export default function Index() {
       shadowOpacity: 0.25,
       shadowRadius: 3.84,
       elevation: 2,
+      maxHeight: '70%'
     },
     listTitle: {
       textAlign: "center",
@@ -159,33 +203,49 @@ export default function Index() {
     },
   };
 
+
+  
+    useFocusEffect(
+        useCallback(() => {
+            console.log('Screen is in focus');
+            // Place your logic here (e.g., analytics tracking, data fetching)
+
+            return () => {
+                console.log('Screen is out of focus');
+                // Cleanup logic if needed
+            };
+        }, [])
+    );
+
+    
   return (
     <SafeAreaView style={styles.container}>
-    <ScrollView>
       <Text style={styles.header}>My Groceries</Text>
       <Text style={styles.subheader}>Create and manage your shopping lists</Text>
 
-      <Button
-        size="md"
-        variant="solid"
-        action="primary"
-        style={styles.createListButton}
-        onPressIn={handleButtonPressIn}
-        onPressOut={handleButtonPressOut}
-      >
-        <Icon as={AddIcon} size="xl" style={styles.createListIcon} />
-        <ButtonText style={styles.createListText}>Create New List</ButtonText>
-      </Button>
+        <TouchableOpacity
+            style={styles.createListButton}
+            onPress={() => router.push('/screens/grocery')}
+            activeOpacity={0.6} 
+            >
+            <Icon as={AddIcon} size="xl" style={styles.createListIcon} />
+            <Text style={styles.createListText}>Create New List</Text>
+        </TouchableOpacity>
 
       <Box style={styles.listContainer}>
+        <ScrollView>
         {groceryLists.map((list) => (
           <TouchableOpacity
             key={list.id}
             style={styles.itemContainer}
             onLongPress={() => {
-              setTargetItemIdToEdit(list.id);
+              setTargetItemIdToEdit(list);
               setShowEditDialog(true);
             }}
+            onPress={() => router.push({
+                    pathname: '/screens/detail',
+                    params: list
+                })}
           >
             <Box>
               <Text style={styles.itemTitle}>{list.title}</Text>
@@ -195,6 +255,7 @@ export default function Index() {
           </TouchableOpacity>
         ))}
 
+        </ScrollView>
         <AlertDialog isOpen={showEditDialog} onClose={handleCancel} size="md">
           <AlertDialogBackdrop />
           <AlertDialogContent>
@@ -209,7 +270,13 @@ export default function Index() {
               </Button>
 
               <Box style={styles.actionDialogButton}>
-                <Button size="sm" style={styles.editDialogButton}>
+                <Button size="sm" style={styles.editDialogButton} onPress={() => {
+                    router.push({
+                        pathname: '/screens/grocery',
+                        params: targetItemIdToEdit 
+                    });
+                    setShowEditDialog(false);
+                }}>
                   <ButtonText>Edit</ButtonText>
                 </Button>
               </Box>
@@ -217,7 +284,6 @@ export default function Index() {
           </AlertDialogContent>
         </AlertDialog>
       </Box>
-    </ScrollView>
     </SafeAreaView>
   );
 }

@@ -1,10 +1,14 @@
-import React, { useState, createRef } from 'react';
+import React, { useState, useContext, createRef } from 'react';
 import { Box } from '@/components/ui/box';
 import { Button, ButtonText } from '@/components/ui/button';
 import { Text } from '@/components/ui/text';
 import { Input, InputField } from "@/components/ui/input"
 import { Icon, EyeOffIcon, EyeIcon, CloseIcon } from '@/components/ui/icon';
 import { AntDesign } from '@expo/vector-icons'; // Import Google icon from AntDesign
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { ScrollView, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
+import { SessionContext } from '@/provider/SessionProvider';
 
 export default function SignIn() {
 
@@ -12,12 +16,14 @@ export default function SignIn() {
     const [password, setPassword] = useState('');
     const [showErase, setShowErase] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
-    const [isLoginPressed, setIsLoginPressed] = useState(false); 
-    const [isGooglePressed, setIsGooglePressed] = useState(false); 
-    const [isSignUpPressed, setIsSignUpPressed] = useState(false); 
+
+    const [isEmailInvalid, setIsEmailInvalid] = useState(false);
+    const [isPasswordInvalid, setIsPasswordInvalid] = useState(false);
 
     const emailInput = createRef();
     const passwordInput = createRef();
+
+    const { saveSession } = useContext(SessionContext);
 
     const styles = {
         brandName: {
@@ -42,12 +48,9 @@ export default function SignIn() {
         },
         container: {
             backgroundColor: '#92C7CF',
-            flex: 1,
             justifyContent: 'center',
-            paddingTop: 50,
-            paddingBottom: 50,
-            paddingLeft: 15,
-            paddingRight: 15,
+            paddingVertical: '25%',
+            paddingHorizontal: 20,
             height: '100%',
         },
         formContainer: {
@@ -72,20 +75,26 @@ export default function SignIn() {
             borderRadius: 10,
             marginTop: 15,
             height: 50,
-            opacity: isLoginPressed ? 0.6 : 1,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        signInButtonText: {
+            fontWeight: 800,
+            fontSize: 16,
+            color: 'white',
+            textAlign: 'center',
         },
         googleButton: {
             backgroundColor: '#f5f5f5',
             borderColor: '#949494',
             borderRadius: 10,
             height: 50,
-            opacity: isGooglePressed ? 0.6 : 1,
             flexDirection: 'row',
             alignItems: 'center',
+            justifyContent: 'center',
         },
         googleButtonText: {
             color: '#949494',
-            
         },
         signInText: {
             textAlign: 'center',
@@ -100,7 +109,6 @@ export default function SignIn() {
         signUpButton: {            
             fontWeight: 'bold', 
             color: '#92C7CF',
-            opacity: isSignUpPressed ? 0.6 : 1,
         },
         signUpContainer: {
             flexDirection: 'row',
@@ -133,17 +141,27 @@ export default function SignIn() {
         setPassword('');
     }
 
-    const handleButtonPressIn = (button: string) => {
-        if (button === 'login') setIsLoginPressed(true);
-        if (button === 'google') setIsGooglePressed(true);
-        if (button === 'signup') setIsSignUpPressed(true);
+    const handleLogin = () => {
+        setIsEmailInvalid(false);
+        setIsPasswordInvalid(false);
+        
+        if (!email) {
+            setIsEmailInvalid(true);
+        }
+
+        if (!password) {
+            setIsPasswordInvalid(true);
+        }
+
+        if (email && password) {
+            saveSession({ email, password });   
+        }
+
     }
 
-    const handleButtonPressOut = (button: string) => {
-        if (button === 'login') setIsLoginPressed(false);
-        if (button === 'google') setIsGooglePressed(false);
-        if (button === 'signup') setIsSignUpPressed(false);
-    }
+    const handleGoogle = () => {
+        alert('Unavailable');
+    };
 
     return (
     <Box style={styles.container}>
@@ -153,7 +171,7 @@ export default function SignIn() {
             <Text style={styles.header}>Get Started</Text>
             <Text style={styles.subheader}>Let's get started by filling out the form below.</Text>
 
-            <Input style={styles.formInput} variant="outline" size="md" isDisabled={false} isInvalid={false} isReadOnly={false}>
+            <Input style={styles.formInput} variant="outline" size="md" isDisabled={false} isInvalid={isEmailInvalid} isReadOnly={false}>
                 <InputField 
                     ref={emailInput} 
                     placeholder="Email" 
@@ -167,7 +185,7 @@ export default function SignIn() {
                 )}
             </Input>
 
-            <Input style={styles.formInput} variant="outline" size="md" isDisabled={false} isInvalid={false} isReadOnly={false}>
+            <Input style={styles.formInput} variant="outline" size="md" isDisabled={false} isInvalid={isPasswordInvalid} isReadOnly={false}>
                 <InputField 
                     ref={passwordInput} 
                     type={showPassword ? "text" : "password"} 
@@ -186,41 +204,34 @@ export default function SignIn() {
                 )}
             </Input>
 
-            <Button 
-                size="xl" 
-                variant="solid" 
-                action="primary" 
+            <TouchableOpacity 
                 style={styles.signInButton}
-                onPressIn={() => handleButtonPressIn('login')} 
-                onPressOut={() => handleButtonPressOut('login')}
+                activeOpacity={0.6}
+                onPress={handleLogin}
             >
-                <ButtonText>Log In</ButtonText>
-            </Button>
+                <Text style={styles.signInButtonText}>Log In</Text>
+            </TouchableOpacity>
 
             <Text style={styles.signInText}>Or sign in with</Text>
 
-            <Button 
-                size="lg" 
-                variant="outline" 
-                action="primary" 
+            <TouchableOpacity 
                 style={styles.googleButton}
-                onPressIn={() => handleButtonPressIn('google')} 
-                onPressOut={() => handleButtonPressOut('google')}
+                activeOpacity={0.6}
+                onPress={handleGoogle}
             >
                 <AntDesign name="google" size={24} color="#949494" style={{ marginRight: 10 }} />
-                <ButtonText style={styles.googleButtonText}>Continue with Google</ButtonText>
-            </Button>
+                <Text style={styles.googleButtonText}>Continue with Google</Text>
+            </TouchableOpacity>
 
             <Box style={styles.signUpContainer}>
                 <Text style={styles.signUpText}>Don't have an account? </Text>
-                <Button 
+                <TouchableOpacity
                     style={styles.signUpButton}
-                    onPressIn={() => handleButtonPressIn('signup')} 
-                    onPressOut={() => handleButtonPressOut('signup')}
-                    variant="link"
+                    onPress={() => router.replace('/auth/signUp')}
+                    activeOpacity={0.6}
                 >
                     <Text style={styles.signUpButton}>Sign Up Here</Text>
-                </Button>
+                </TouchableOpacity>
             </Box>
         </Box>
     </Box>

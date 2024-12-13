@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useLayoutEffect } from "react";
 import { ScrollView, Pressable, TouchableOpacity } from "react-native";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
@@ -18,14 +18,17 @@ import {
     AlertDialogFooter,
     AlertDialogBody,
   } from '@/components/ui/alert-dialog';
+import { SafeAreaView } from "react-native-safe-area-context";
+import { router, useLocalSearchParams } from "expo-router";
+
 
 const styles = {
     container: {
         backgroundColor: "#FBF9F1",
-        padding: 30,
-        paddingTop: 60,
-        paddingBottom: 170,
-        flexGrow: 1,
+    },
+    scrollView: {
+        padding: 20,
+        height: "100%",
     },
     headerContainer: {
         flexDirection: "row",
@@ -37,7 +40,7 @@ const styles = {
         fontWeight: "600",
     },
     headerInput: {
-        flex: 1,
+        // flex: 1,
     },
     backButton: {
         backgroundColor: "#92C7CF",
@@ -64,8 +67,6 @@ const styles = {
         shadowOpacity: 0.25,
         shadowRadius: 3.84,
         elevation: 2,
-        minHeight: 270,
-        height: "52%",
     },
     addItemContainer: {
         flexDirection: "row",
@@ -168,7 +169,9 @@ const styles = {
         height: 50,
         alignItems: "center",
         justifyContent: "center",
-        marginTop: 12,
+        marginTop: 15,
+        marginBottom: 50,
+
     },
     saveText: {
         color: "white",
@@ -376,12 +379,34 @@ function PressableButton({ children, onPress, style }) {
     );
 }
 
+  
 export default function Grocery() {
+
+    const targetItemIdToEdit = useLocalSearchParams();
+
+    // check if targetItemIdToEdit is not null
+    const [headerTitle, setHeaderTitle] = useState("");
+    const [isHeaderClicked, setIsHeaderClicked] = useState(false);
+    const [summary, setSummary] = useState({
+        items: 0,
+        itemsChecked: 0,
+        totalAmountInAllItems: 0,
+        totalAmountToPay: 0,
+    });
+
+    useEffect(() => {
+        if ('title' in targetItemIdToEdit) {
+            setHeaderTitle(targetItemIdToEdit.title);
+            setIsHeaderClicked(true);
+        }
+    }, []);
+
     const [cartItems, setCartItems] = useState([
         { id: 1, name: "Milk", price: 5, quantity: 23, isChecked: false },
         { id: 2, name: "Eggs", price: 12, quantity: 10, isChecked: false },
         { id: 3, name: "Bread", price: 20, quantity: 5, isChecked: false },
         { id: 4, name: "Butter", price: 15, quantity: 2, isChecked: false },
+        { id: 5, name: "Butter", price: 15, quantity: 2, isChecked: false },
     ]);
 
     const updateQuantity = (id, delta) => {
@@ -441,14 +466,7 @@ export default function Grocery() {
         }
     };
     
-    const [headerTitle, setHeaderTitle] = useState("");
-    const [isHeaderClicked, setIsHeaderClicked] = useState(false);
-    const [summary, setSummary] = useState({
-        items: 0,
-        itemsChecked: 0,
-        totalAmountInAllItems: 0,
-        totalAmountToPay: 0,
-    });
+
 
     useEffect(() => {
         const itemsChecked = cartItems.filter(item => item.isChecked).length;
@@ -479,9 +497,11 @@ export default function Grocery() {
     };
 
     return (
-        <Box style={styles.container}>
+        <SafeAreaView style={styles.container}>
+           <ScrollView style={styles.scrollView}>
            <Box style={styles.headerContainer}>
-            <PressableButton style={styles.backButton}>
+
+            <PressableButton style={styles.backButton} onPress={() => {router.back();}}>
                 <Icon as={ArrowLeftIcon} size="xl" style={styles.backIcon} />
             </PressableButton>
 
@@ -500,7 +520,7 @@ export default function Grocery() {
             >
             <InputField 
                 placeholder="Enter Title here..." 
-                onBlur={()=>setIsHeaderClicked(true)} 
+                onBlur={()=>headerTitle!= '' ? setIsHeaderClicked(true) : setIsHeaderClicked(false)} 
                 onChangeText={(value)=>setHeaderTitle(value)}
                 value={headerTitle}
                 className="font-semibold"
@@ -508,7 +528,7 @@ export default function Grocery() {
             </Input>
            } 
 
-        </Box>
+            </Box>
 
 
             <Box style={styles.cartContainer}>
@@ -517,7 +537,6 @@ export default function Grocery() {
                     <AddItemButton onSave={handleAddItemSave} />
                 </Box>
 
-                <ScrollView>
                     {cartItems.map((item) => (
                         <TouchableOpacity key={item.id} onLongPress={() => handleItemLongPress(item)}>
                         <Box key={item.id} style={styles.cartItem}>
@@ -562,8 +581,6 @@ export default function Grocery() {
                         showEditDialogCallback={setShowEditDialog}
                         editItemData={editItemData} 
                         editCartItemCallback={editItem} />
-
-                </ScrollView>
             </Box>
 
             <Box style={styles.summaryContainer}>
@@ -592,6 +609,7 @@ export default function Grocery() {
             <PressableButton style={styles.saveButton}>
                 <Text style={styles.saveText}>Complete</Text>
             </PressableButton>
-        </Box>
+            </ScrollView>
+        </SafeAreaView>
     );
 }

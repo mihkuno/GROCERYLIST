@@ -168,7 +168,6 @@ export default function Home() {
         }, [])
     );
 
-    
   return (
     <SafeAreaView style={styles.container}>
       <Text style={styles.header}>My Groceries</Text>

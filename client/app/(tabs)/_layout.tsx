@@ -37,8 +37,8 @@ export default function TabLayout() {
             position: 'absolute',
           },
           default: {
-            borderTopLeftRadius: 35,
-            borderTopRightRadius: 35,
+            // borderTopLeftRadius: 35,
+            // borderTopRightRadius: 35,
             shadowColor: '#000',
             shadowOffset: {
               width: 0,

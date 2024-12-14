@@ -25,7 +25,6 @@ export const SessionProvider = ({ children }) => {
   }, []);
 
 
-
   const removeGroceryListItem = async (item_ids) => {
     if (!session) {
         alert('No session found!');
@@ -33,7 +32,7 @@ export const SessionProvider = ({ children }) => {
     }
 
     try {
-        const response = await axios.delete('http://192.168.1.5:3000/items/delete', {
+        const response = await axios.delete('http://192.168.164.137:3000/items/delete', {
             data: {
                 user_id: session.id,
                 email: session.email,
@@ -50,9 +49,7 @@ export const SessionProvider = ({ children }) => {
             alert(JSON.stringify(error));
         }
     }
-}
-
-            
+}       
 
   const addGroceryListItems = async (listId, items) => {
 
@@ -83,7 +80,7 @@ export const SessionProvider = ({ children }) => {
     }
 
     try {
-        const response = await axios.post('http://192.168.1.5:3000/items/add', {
+        const response = await axios.post('http://192.168.164.137:3000/items/add', {
             user_id: session.id,
             email: session.email,
             password: session.password,
@@ -103,9 +100,6 @@ export const SessionProvider = ({ children }) => {
         }
     }
     }
-      
-
-
 
   const updateGroceryListDetails = async (data) => {
 
@@ -135,7 +129,7 @@ export const SessionProvider = ({ children }) => {
         data.email = session.email;
         data.password = session.password;
 
-        const response = await axios.put('http://192.168.1.5:3000/lists/update', data);
+        const response = await axios.put('http://192.168.164.137:3000/lists/update', data);
         return response.data;
     }
     catch (error) {
@@ -155,7 +149,7 @@ export const SessionProvider = ({ children }) => {
     }
 
     try {
-        const response = await axios.post('http://192.168.1.5:3000/lists/detail', {
+        const response = await axios.post('http://192.168.164.137:3000/lists/detail', {
             id: session.id,
             email: session.email,
             password: session.password,
@@ -180,7 +174,7 @@ export const SessionProvider = ({ children }) => {
     }
 
     try {
-      const response = await axios.post('http://192.168.1.5:3000/lists', {
+      const response = await axios.post('http://192.168.164.137:3000/lists', {
         id: session.id,
         name: session.name,
         email: session.email,
@@ -206,7 +200,7 @@ export const SessionProvider = ({ children }) => {
 
         try {
               // Send data in the body of the DELETE request
-            const response = await axios.delete('http://192.168.1.5:3000/lists/delete', {
+            const response = await axios.delete('http://192.168.164.137:3000/lists/delete', {
                 data: {
                 user_id: session.id,
                 email: session.email,
@@ -214,7 +208,6 @@ export const SessionProvider = ({ children }) => {
                 list_id: listId,
                 },
             });
-
 
             return response.data;
 
@@ -247,7 +240,7 @@ export const SessionProvider = ({ children }) => {
           }
 
         try {
-            const response = await axios.post('http://192.168.1.5:3000/lists/create', {
+            const response = await axios.post('http://192.168.164.137:3000/lists/create', {
                 user_id: session.id,
                 email: session.email,
                 password: session.password,
@@ -269,7 +262,7 @@ export const SessionProvider = ({ children }) => {
 
   const createAccount = async (name, email, password, confirmPassword) => {
     try {
-        const response = await axios.post('http://192.168.1.5:3000/users/create', {
+        const response = await axios.post('http://192.168.164.137:3000/users/create', {
           name: name,
           email: email,
           password: password,
@@ -296,7 +289,7 @@ export const SessionProvider = ({ children }) => {
     }
 
     try {
-        const response = await axios.post('http://192.168.1.5:3000/users/login', {
+        const response = await axios.post('http://192.168.164.137:3000/users/login', {
           email: session.email,
           password: session.password,
         });

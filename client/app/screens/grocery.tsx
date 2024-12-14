@@ -40,9 +40,11 @@ const styles = {
     header: {
         fontSize: 20,
         fontWeight: "600",
+        width: '75%'
     },
     headerInput: {
         // flex: 1,
+        width: '75%'
     },
     backButton: {
         backgroundColor: "#92C7CF",

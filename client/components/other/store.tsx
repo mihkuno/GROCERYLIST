@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useCallback } from "react";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
 import { ScrollView, TouchableOpacity, View } from "react-native";
@@ -6,9 +6,12 @@ import { ArrowLeftIcon } from "@/components/ui/icon";
 import { Icon } from "@/components/ui/icon";
 import { Image } from "@/components/ui/image";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { SessionContext } from "@/provider/SessionProvider";
+import { useFocusEffect } from "expo-router";
 
 // Main Component
 export default function Home() {
+    const { getTotalExpenses } = useContext(SessionContext);
   const [selectedTab, setSelectedTab] = useState("day");
 
   const styles = {
@@ -121,6 +124,28 @@ export default function Home() {
     require("./../../assets/images/tiktok.png"),
     require("./../../assets/images/foodpanda.png"),
   ];
+
+
+ useFocusEffect(
+        useCallback(() => {
+            console.log('Screen is in focus');
+            // Place your logic here (e.g., analytics tracking, data fetching)
+
+
+            (async () => {
+                
+                await getTotalExpenses();
+
+            })();
+
+            return () => {
+                console.log('Screen is out of focus');
+                // Cleanup logic if needed
+            };
+        }, [])
+    );
+
+
 
   const renderExpenseData = () => {
     switch (selectedTab) {

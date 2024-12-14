@@ -104,7 +104,6 @@ const queryDB = (query, params = []) =>
   
 
 
-  
   app.post('/lists/detail', async (req, res) => {
     try {
       const { id, email, password, listId } = req.body;

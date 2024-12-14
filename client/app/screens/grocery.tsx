@@ -203,7 +203,7 @@ function AddItemButton({ onSave }) {
   };
 
   const handleSave = () => {
-    if (!nameInput) return;
+    if (!nameInput) alert('Name cannot be empty');
 
     onSave({ name: nameInput, price: priceInput });
     setNameInput("");
@@ -211,6 +211,7 @@ function AddItemButton({ onSave }) {
     handleClose();
   };
 
+  
   return (
     <>
       <PressableButton onPress={() => setShowAlertDialog(true)} style={styles.addItemButton}>
@@ -240,7 +241,7 @@ function AddItemButton({ onSave }) {
               <InputField 
                 placeholder="Name" 
                 onChangeText={onNameChange} // Handle name input changes
-            />
+              />
             </Input>
             <Input
               variant="outline"
@@ -253,19 +254,16 @@ function AddItemButton({ onSave }) {
               <InputField
                 placeholder="Price"
                 keyboardType="numeric" // Set the keyboard type to numeric
-                onChangeText={onPriceChange} // Handle price input changes
+                onChangeText={(value) => {
+                  // Ensure price is a valid number
+                  const parsedPrice = parseFloat(value);
+                  // If parsedPrice is NaN, set it to a default value (e.g., 0.00)
+                  onPriceChange(isNaN(parsedPrice) ? '0.00' : value);
+                }}
               />
             </Input>
           </AlertDialogBody>
           <AlertDialogFooter className="">
-            {/* <Button
-              variant="outline"
-              action="secondary"
-              onPress={handleClose}
-              size="sm"
-            >
-              <ButtonText>Cancel</ButtonText>
-            </Button> */}
             <Button size="sm" onPress={handleSave} className="bg-[#92C7CF]">
               <ButtonText>Save</ButtonText>
             </Button>
@@ -274,6 +272,7 @@ function AddItemButton({ onSave }) {
       </AlertDialog>
     </>
   );
+  
 }
 
 
@@ -284,7 +283,7 @@ function EditItemDialog({ showEditDialog, showEditDialogCallback, editItemData, 
     const handleClose = () => showEditDialogCallback(false);
 
     const handleSave = () => {
-        if (newItemData.name == '') return;
+        if (newItemData.name == '') alert('Name cannot be empty');
         editCartItemCallback(editItemData.id, newItemData);
         handleClose();
     }
@@ -323,46 +322,41 @@ function EditItemDialog({ showEditDialog, showEditDialogCallback, editItemData, 
                     >
                         <InputField 
                             placeholder="Price"
-                            defaultValue={parseFloat(editItemData.price).toFixed(2)}
-                            onChangeText={(value) => setNewItemData({ ...newItemData, price: value })}
+                            defaultValue={isNaN(parseFloat(editItemData.price)) ? '0.00' : parseFloat(editItemData.price).toFixed(2)}
+                            onChangeText={(value) => {
+                                // Ensure the price is a valid number before updating
+                                const parsedPrice = parseFloat(value);
+                                setNewItemData({ ...newItemData, price: isNaN(parsedPrice) ? 0 : parsedPrice });
+                            }}
                             keyboardType="numeric" 
                         />
                     </Input>
                 </AlertDialogBody>
-                <AlertDialogFooter style={{flexDirection: 'row', justifyContent:'space-between'}}>
+                <AlertDialogFooter style={{ flexDirection: 'row', justifyContent: 'space-between' }}>
                     <Button
-                        style={{backgroundColor: '#E195AB'}}
+                        style={{ backgroundColor: '#E195AB' }}
                         variant="solid"
                         size="sm"
                         onPress={handleRemove}
                     >
                         <ButtonText>Remove</ButtonText>
                     </Button>
-
-                    <Box style={{flexDirection: 'row'}}>
-                        {/* <Button
-                            variant="outline"
-                            action="secondary"
-                            size="sm"
-                            onPress={handleClose}
-                        >
-                            <ButtonText>Cancel</ButtonText>
-                        </Button>
-                         */}
+    
+                    <Box style={{ flexDirection: 'row' }}>
                         <Button
                             size="sm"
                             onPress={handleSave}
                             className="bg-[#92C7CF]"
-                            style={{marginLeft: 8}}    
+                            style={{ marginLeft: 8 }}    
                         >
                             <ButtonText>Save</ButtonText>
                         </Button>
                     </Box>
-                
                 </AlertDialogFooter>
             </AlertDialogContent>
         </AlertDialog>
     );
+    
 }
 
 
@@ -439,7 +433,7 @@ export default function Grocery() {
         setCartItems((prevItems) => [
             ...prevItems,
             {
-                id: -1,
+                id: -1 * Math.random(),
                 name: item.name,
                 price: item.price,
                 quantity: 1,
@@ -533,120 +527,120 @@ export default function Grocery() {
         setShowEditDialog(true);
     };
 
+    
     return (
         <SafeAreaView style={styles.container}>
-           <ScrollView style={styles.scrollView}>
-           <Box style={styles.headerContainer}>
-
-            <PressableButton style={styles.backButton} onPress={() => {router.back();}}>
-                <Icon as={ArrowLeftIcon} size="xl" style={styles.backIcon} />
-            </PressableButton>
-
-           {
-            isHeaderClicked ?
-            <Text style={styles.header} onPress={()=>setIsHeaderClicked(false)}>{headerTitle}</Text>
-            :
-            <Input
-                style={styles.headerInput}
-                variant="underlined"
-                size="lg"
-                isDisabled={false}
-                isInvalid={false}
-                isReadOnly={false}
-                className="h-22"
-            >
-            <InputField 
-                placeholder="Enter Title here..." 
-                onBlur={()=>headerTitle!= '' ? setIsHeaderClicked(true) : setIsHeaderClicked(false)} 
-                onChangeText={(value)=>setHeaderTitle(value)}
-                value={headerTitle}
-                className="font-semibold"
-            />
-            </Input>
-           } 
-
-            </Box>
-
-
-            <Box style={styles.cartContainer}>
-                <Box style={styles.addItemContainer}>
-                    <Text style={styles.addItemText}>Add new item...</Text>
-                    <AddItemButton onSave={handleAddItemSave} />
+            <ScrollView style={styles.scrollView}>
+                <Box style={styles.headerContainer}>
+                    <PressableButton style={styles.backButton} onPress={() => {router.back();}}>
+                        <Icon as={ArrowLeftIcon} size="xl" style={styles.backIcon} />
+                    </PressableButton>
+    
+                    {
+                        isHeaderClicked ?
+                        <Text style={styles.header} onPress={() => setIsHeaderClicked(false)}>{headerTitle}</Text>
+                        :
+                        <Input
+                            style={styles.headerInput}
+                            variant="underlined"
+                            size="lg"
+                            isDisabled={false}
+                            isInvalid={false}
+                            isReadOnly={false}
+                            className="h-22"
+                        >
+                            <InputField
+                                placeholder="Enter Title here..."
+                                onBlur={() => headerTitle !== '' ? setIsHeaderClicked(true) : setIsHeaderClicked(false)}
+                                onChangeText={(value) => setHeaderTitle(value)}
+                                value={headerTitle}
+                                className="font-semibold"
+                            />
+                        </Input>
+                    }
                 </Box>
-
+    
+                <Box style={styles.cartContainer}>
+                    <Box style={styles.addItemContainer}>
+                        <Text style={styles.addItemText}>Add new item...</Text>
+                        <AddItemButton onSave={handleAddItemSave} />
+                    </Box>
+    
                     {cartItems.map((item) => (
-                        <TouchableOpacity key={Math.random()*item.id} onLongPress={() => handleItemLongPress(item)}>
-                        <Box key={Math.random()*item.id} style={styles.cartItem}>
-                            <Box style={styles.checkboxContainer}>
-                            <Checkbox
-                                size="lg"                            
-                                isChecked={item.isChecked}
-                                onChange={() => toggleCheckbox(item.id)}
-                            >
-                                <CheckboxIndicator>
-                                    <CheckboxIcon as={CheckIcon} />
-                                </CheckboxIndicator>
-                            </Checkbox>
-                                <Box style={styles.checkboxLabel}>
-                                    <Text style={{maxWidth: 120, textOverflow: 'elipsis'}}>{item.name}</Text>
-                                    <Text>₱{parseFloat(item.price).toFixed(2)}</Text>
+                        <TouchableOpacity key={item.id} onLongPress={() => handleItemLongPress(item)}>
+                            <Box key={item.id} style={styles.cartItem}>
+                                <Box style={styles.checkboxContainer}>
+                                    <Checkbox
+                                        size="lg"
+                                        isChecked={item.isChecked}
+                                        onChange={() => toggleCheckbox(item.id)}
+                                    >
+                                        <CheckboxIndicator>
+                                            <CheckboxIcon as={CheckIcon} />
+                                        </CheckboxIndicator>
+                                    </Checkbox>
+                                    <Box style={styles.checkboxLabel}>
+                                        <Text style={{ maxWidth: 120, textOverflow: 'elipsis' }}>{item.name}</Text>
+                                        <Text>₱{isNaN(parseFloat(item.price)) ? '0.00' : parseFloat(item.price).toFixed(2)}</Text>
+                                    </Box>
+                                </Box>
+    
+                                <Box style={styles.stepContainer}>
+                                    <PressableButton
+                                        style={styles.stepButton}
+                                        onPress={() => updateQuantity(item.id, -1)}
+                                    >
+                                        <Icon as={RemoveIcon} size="sm" />
+                                    </PressableButton>
+                                    <Text>{item.quantity}</Text>
+                                    <PressableButton
+                                        style={styles.stepButton}
+                                        onPress={() => updateQuantity(item.id, 1)}
+                                    >
+                                        <Icon as={AddIcon} size="sm" />
+                                    </PressableButton>
                                 </Box>
                             </Box>
-
-                            <Box style={styles.stepContainer}>
-                                <PressableButton
-                                    style={styles.stepButton}
-                                    onPress={() => updateQuantity(item.id, -1)}
-                                >
-                                    <Icon as={RemoveIcon} size="sm" />
-                                </PressableButton>
-                                <Text>{item.quantity}</Text>
-                                <PressableButton
-                                    style={styles.stepButton}
-                                    onPress={() => updateQuantity(item.id, 1)}
-                                >
-                                    <Icon as={AddIcon} size="sm" />
-                                </PressableButton>
-                            </Box>
-                            
-                        </Box>
                         </TouchableOpacity>
                     ))}
-
-                    <EditItemDialog 
-                        showEditDialog={showEditDialog} 
+    
+                    <EditItemDialog
+                        showEditDialog={showEditDialog}
                         showEditDialogCallback={setShowEditDialog}
-                        editItemData={editItemData} 
-                        editCartItemCallback={editItem} />
-            </Box>
-
-            <Box style={styles.summaryContainer}>
-                <Text style={styles.summaryText}>Summary</Text>
-                <Box>
-                    <Box style={styles.summaryRow}>
-                        <Text style={styles.summaryRowText}>No. of Items:</Text>
-                        <Text>{summary.items}</Text>
+                        editItemData={editItemData}
+                        editCartItemCallback={editItem}
+                    />
+                </Box>
+    
+                <Box style={styles.summaryContainer}>
+                    <Text style={styles.summaryText}>Summary</Text>
+                    <Box>
+                        <Box style={styles.summaryRow}>
+                            <Text style={styles.summaryRowText}>No. of Items:</Text>
+                            <Text>{summary.items}</Text>
+                        </Box>
+                        <Box style={styles.summaryRow}>
+                            <Text style={styles.summaryRowText}>Items Checked:</Text>
+                            <Text>{summary.itemsChecked}</Text>
+                        </Box>
+                        <Box style={styles.summaryRow}>
+                            <Text style={styles.summaryRowText}>Total Cost In All items:</Text>
+                            <Text>₱{isNaN(parseFloat(summary.totalAmountInAllItems)) ? '0.00' : parseFloat(summary.totalAmountInAllItems).toFixed(2)}</Text>
+                        </Box>
+                        <Divider />
+                        <Box style={styles.summaryRow}>
+                            <Text style={styles.summaryRowTotal}>Total Cost To Pay:</Text>
+                            <Text style={styles.summaryRowTotal}>₱{isNaN(parseFloat(summary.totalAmountToPay)) ? '0.00' : parseFloat(summary.totalAmountToPay).toFixed(2)}</Text>
+                        </Box>
                     </Box>
-                    <Box style={styles.summaryRow}>
-                        <Text style={styles.summaryRowText}>Items Checked:</Text>
-                        <Text>{summary.itemsChecked}</Text>
-                    </Box>
-                    <Box style={styles.summaryRow}>
-                        <Text style={styles.summaryRowText}>Total Cost In All items:</Text>
-                        <Text>₱{parseFloat(summary.totalAmountInAllItems).toFixed(2)}</Text>
-                    </Box>
-                    <Divider />
-                    <Box style={styles.summaryRow}>
-                        <Text style={styles.summaryRowTotal}>Total Cost To Pay:</Text>
-                        <Text style={styles.summaryRowTotal}>₱{parseFloat(summary.totalAmountToPay).toFixed(2)}</Text>
-                    </Box>
-                </Box>  
-            </Box>
-                    
-            <PressableButton style={styles.saveButton} onPress={handleComplete}>
-                <Text style={styles.saveText}>Complete</Text>
-            </PressableButton>
+                </Box>
+    
+                <PressableButton style={styles.saveButton} onPress={handleComplete}>
+                    <Text style={styles.saveText}>Complete</Text>
+                </PressableButton>
             </ScrollView>
         </SafeAreaView>
     );
+
+    
 }

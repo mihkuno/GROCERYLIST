@@ -386,6 +386,52 @@ app.delete('/items/delete', async (req, res) => {
     }
   });
 
+
+  app.delete('/lists/delete', async (req, res) => {
+    const { user_id, email, password, list_id } = req.body;
+  
+    // Validate required fields
+    if (!user_id || !email || !password || !list_id) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+  
+    try {
+      // Step 1: Validate user credentials
+      const userResults = await queryDB('SELECT * FROM User WHERE email = ?', [email]);
+  
+      if (userResults.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      const user = userResults[0];
+  
+      // Step 2: Compare password
+      if (user.id !== user_id) {
+        return res.status(403).json({ error: 'Unauthorized user' });
+      }
+  
+      // Step 3: Check if the list belongs to the user
+      const listResults = await queryDB('SELECT * FROM List WHERE id = ? AND user_id = ?', [list_id, user_id]);
+  
+      if (listResults.length === 0) {
+        return res.status(404).json({ error: 'List not found or does not belong to user' });
+      }
+  
+      // Step 4: Delete items associated with the list
+      await queryDB('DELETE FROM Item WHERE list_id = ?', [list_id]);
+  
+      // Step 5: Delete the list
+      await queryDB('DELETE FROM List WHERE id = ?', [list_id]);
+  
+      return res.status(200).json({ message: 'List and associated items deleted successfully' });
+  
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Database error' });
+    }
+  });
+
+  
   
 
   app.post('/lists/create', async (req, res) => {

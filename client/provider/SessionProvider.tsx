@@ -198,6 +198,36 @@ export const SessionProvider = ({ children }) => {
     }
     }
 
+    const deleteGroceryList = async (listId) => {   
+        if (!session) {
+            alert('No session found!');
+            return;
+          }
+
+        try {
+              // Send data in the body of the DELETE request
+            const response = await axios.delete('http://192.168.1.5:3000/lists/delete', {
+                data: {
+                user_id: session.id,
+                email: session.email,
+                password: session.password,
+                list_id: listId,
+                },
+            });
+
+
+            return response.data;
+
+        }
+        catch (error) {
+            if (error.response) {
+                alert(JSON.stringify(error.response.data.error));
+            } else {
+                alert(JSON.stringify(error));
+            }
+        }
+    }
+
     const createGroceryList = async (listName, items) => {
 
         // {
@@ -314,7 +344,7 @@ export const SessionProvider = ({ children }) => {
   };
 
   return (
-    <SessionContext.Provider value={{ session, saveSession, clearSession, createAccount, getGroceryLists, createGroceryList, getGroceryListDetails, updateGroceryListDetails, addGroceryListItems, removeGroceryListItem  }}>
+    <SessionContext.Provider value={{ session, saveSession, clearSession, createAccount, getGroceryLists, createGroceryList, getGroceryListDetails, updateGroceryListDetails, addGroceryListItems, removeGroceryListItem, deleteGroceryList  }}>
       {children}
     </SessionContext.Provider>
   );

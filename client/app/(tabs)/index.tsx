@@ -21,17 +21,8 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useFocusEffect } from "expo-router";
 
 
-// const initialGroceryLists = [
-//   {
-//     id: 1,
-//     title: "Weekly Groceries",
-//     subtitle: "15 items • Created Today",
-//   },
-// ];
-
 // Main Component
 export default function Home() {
-  const [buttonOpacity, setButtonOpacity] = useState(1);
   const [groceryLists, setGroceryLists] = useState([]);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [targetItemIdToEdit, setTargetItemIdToEdit] = useState({
@@ -40,12 +31,14 @@ export default function Home() {
     subtitle: "",
   });
 
-  const { getGroceryLists } = useContext(SessionContext);
+  const { getGroceryLists, deleteGroceryList } = useContext(SessionContext);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     // Remove the list with the given ID
     setGroceryLists(groceryLists.filter((list) => list.id !== targetItemIdToEdit.id));
     setShowEditDialog(false); // Close the dialog
+
+    await deleteGroceryList(targetItemIdToEdit.id);
   };
 
   const handleCancel = () => {

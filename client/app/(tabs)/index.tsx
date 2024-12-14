@@ -162,6 +162,7 @@ export default function Home() {
 
             (async () => {
                 const {lists} = await getGroceryLists();
+
                 setGroceryLists(lists);
 
                 console.log('Grocery lists:', lists);
@@ -208,7 +209,7 @@ export default function Home() {
                         onPress={() =>
                         router.push({
                             pathname: '/screens/detail',
-                            params: { list }, // Ensure params is passed as an object
+                            params: list // Ensure params is passed as an object
                         })
                         }
                     >

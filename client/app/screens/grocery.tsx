@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useLayoutEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { ScrollView, Pressable, TouchableOpacity } from "react-native";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
@@ -20,6 +20,8 @@ import {
   } from '@/components/ui/alert-dialog';
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router, useLocalSearchParams } from "expo-router";
+
+import { SessionContext } from "@/provider/SessionProvider";
 
 
 const styles = {
@@ -382,10 +384,11 @@ function PressableButton({ children, onPress, style }) {
   
 export default function Grocery() {
 
-    const targetItemIdToEdit = useLocalSearchParams();
+    const targetItem = useLocalSearchParams();
+    const { getGroceryListDetails, updateGroceryListDetails, createGroceryList, addGroceryListItems, removeGroceryListItem } = useContext(SessionContext);
 
     // check if targetItemIdToEdit is not null
-    const [headerTitle, setHeaderTitle] = useState("");
+    const [headerTitle, setHeaderTitle] = useState('');
     const [isHeaderClicked, setIsHeaderClicked] = useState(false);
     const [summary, setSummary] = useState({
         items: 0,
@@ -394,20 +397,24 @@ export default function Grocery() {
         totalAmountToPay: 0,
     });
 
+    const [data, setData] = useState();
+    const [cartItems, setCartItems] = useState([]);
+    const [itemIdToRemove, setItemIdToRemove] = useState([]);
+
     useEffect(() => {
-        if ('title' in targetItemIdToEdit) {
-            setHeaderTitle(targetItemIdToEdit.title);
+        
+        if ('id' in targetItem) {
             setIsHeaderClicked(true);
+        
+            (async () => {
+                const response = await getGroceryListDetails(targetItem.id);
+                setData(response);
+                setHeaderTitle(response.headerTitle);
+                setCartItems(response.items);
+            })();
         }
     }, []);
 
-    const [cartItems, setCartItems] = useState([
-        { id: 1, name: "Milk", price: 5, quantity: 23, isChecked: false },
-        { id: 2, name: "Eggs", price: 12, quantity: 10, isChecked: false },
-        { id: 3, name: "Bread", price: 20, quantity: 5, isChecked: false },
-        { id: 4, name: "Butter", price: 15, quantity: 2, isChecked: false },
-        { id: 5, name: "Butter", price: 15, quantity: 2, isChecked: false },
-    ]);
 
     const updateQuantity = (id, delta) => {
         setCartItems((items) =>
@@ -415,10 +422,6 @@ export default function Grocery() {
                 item.id === id ? { ...item, quantity: Math.max(item.quantity + delta, 1) } : item
             )
         );
-    };
-
-    const removeItem = (id) => {
-        setCartItems((items) => items.filter((item) => item.id !== id));
     };
 
     const toggleCheckbox = (id) => {
@@ -436,7 +439,7 @@ export default function Grocery() {
         setCartItems((prevItems) => [
             ...prevItems,
             {
-                id: prevItems.length + 1,
+                id: -1,
                 name: item.name,
                 price: item.price,
                 quantity: 1,
@@ -446,26 +449,60 @@ export default function Grocery() {
     };
 
     const editItem = (id, newData) => {
+
+        // item to remove
         if (newData === null) {
             // Remove item logic and reassign IDs
             setCartItems(prevCartItems => {
                 // Remove the item with the given id
                 const updatedItems = prevCartItems.filter(item => item.id !== id);
-    
-                // Reassign IDs to make them consecutive
-                return updatedItems.map((item, index) => ({
-                    ...item,
-                    id: index + 1 // Reassign ID starting from 1
-                }));
+                return updatedItems;
             });
-        } else {
+            setItemIdToRemove([...itemIdToRemove, id]);
+        } 
+
+        // item to edit
+        else {
             // Update the cart with new data
             setCartItems(prevCartItems => 
                 prevCartItems.map(item => item.id === id ? { ...item, ...newData } : item)
             );
         }
     };
-    
+
+    const handleComplete = async () => {
+
+        // check if targeItem is local search param is {} or empty object
+        
+        if (Object.keys(targetItem).length === 0) {
+            // creating a new grocery
+            await createGroceryList(headerTitle, cartItems);             
+        }
+
+        else {
+            // grocery is being edited
+                
+            // remove items in itemIdToRemove
+            if (itemIdToRemove.length > 0) {
+                console.log(itemIdToRemove);
+                await removeGroceryListItem(itemIdToRemove);
+            }
+
+            // get items with negative id
+            const itemsToAdd = cartItems.filter(item => item.id < 0);
+            if (itemsToAdd.length > 0) {
+                await addGroceryListItems(targetItem.id, itemsToAdd);
+            } 
+
+            data.items = cartItems;
+            data.headerTitle = headerTitle;
+            // only update the data without negative id
+            const dataToUpdate = cartItems.filter(item => item.id > 0);
+            await updateGroceryListDetails({ ...data, items: dataToUpdate });
+        }
+
+        router.back();
+    };
 
 
     useEffect(() => {
@@ -538,8 +575,8 @@ export default function Grocery() {
                 </Box>
 
                     {cartItems.map((item) => (
-                        <TouchableOpacity key={item.id} onLongPress={() => handleItemLongPress(item)}>
-                        <Box key={item.id} style={styles.cartItem}>
+                        <TouchableOpacity key={Math.random()*item.id} onLongPress={() => handleItemLongPress(item)}>
+                        <Box key={Math.random()*item.id} style={styles.cartItem}>
                             <Box style={styles.checkboxContainer}>
                             <Checkbox
                                 size="lg"                            
@@ -606,7 +643,7 @@ export default function Grocery() {
                 </Box>  
             </Box>
                     
-            <PressableButton style={styles.saveButton}>
+            <PressableButton style={styles.saveButton} onPress={handleComplete}>
                 <Text style={styles.saveText}>Complete</Text>
             </PressableButton>
             </ScrollView>

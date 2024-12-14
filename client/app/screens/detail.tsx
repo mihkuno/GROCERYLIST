@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState, useContext, useCallback } from "react";
 import { ScrollView, TouchableOpacity } from "react-native";
 import { Box } from "@/components/ui/box";
 import { Text } from "@/components/ui/text";
@@ -6,51 +6,43 @@ import { Icon, ArrowLeftIcon } from "@/components/ui/icon";
 import { Checkbox, CheckboxIndicator, CheckboxIcon, CheckboxLabel } from "@/components/ui/checkbox";
 import { CheckIcon } from "@/components/ui/icon";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { router, useLocalSearchParams } from "expo-router";
+import { router, useFocusEffect, useLocalSearchParams } from "expo-router";
+import { SessionContext } from "@/provider/SessionProvider";
 
-// Data object for items and details
-const initialData = {
-    headerTitle: "Title sa List",
-    items: [
-        { name: "Milk (2 gallons)", price: "5.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-        { name: "Eggs (1 dozen)", price: "1.96", isChecked: false },
-    ],
-    details: {
-        created: "June 15, 2023",
-        lastUpdated: "June 15, 2023",
-        itemsCompleted: 0,
-    },
-};
 
 export default function Home() {
 
     const targetItem = useLocalSearchParams();
+    const { getGroceryListDetails, updateGroceryListDetails } = useContext(SessionContext);
 
-    const [data, setData] = useState( 'title' in targetItem ? {...initialData, headerTitle: targetItem.title} : initialData);
-    const [isPressed, setIsPressed] = useState(false);
+
+    const [data, setData] = useState(null);
+
+         useFocusEffect(
+            useCallback(() => {
+                console.log('kani is in focus');    
+    
+                (async () => {
+                    const response = await getGroceryListDetails(targetItem.id);      
+                
+                    // Calculate the total of checked items
+                    const total = response.items
+                        .filter(item => item.isChecked)
+                        .reduce((sum, item) => sum + parseFloat(item.price), 0); // Directly parse price as a number
+                
+                    setData({
+                        ...response,
+                        total: total.toFixed(2), // Store the total as a string with 2 decimal places
+                    });
+
+                })();
+    
+                return () => {
+                    console.log('kani is out of focus');
+                    // Cleanup logic if needed
+                };
+            }, [])
+        );
 
     const handleCheckboxChange = (index) => {
         const updatedItems = [...data.items];
@@ -64,7 +56,8 @@ export default function Home() {
             .filter(item => item.isChecked)
             .reduce((sum, item) => sum + parseFloat(item.price), 0); // Directly parse price as a number
     
-        setData({
+
+        const updatedData = {
             ...data,
             items: updatedItems,
             details: {
@@ -72,7 +65,10 @@ export default function Home() {
                 itemsCompleted,
             },
             total: total.toFixed(2), // Store the total as a string with 2 decimal places
-        });
+        };
+
+        setData(updatedData);
+        (async () => await updateGroceryListDetails(updatedData))();
     };
 
     const styles = {
@@ -186,7 +182,7 @@ export default function Home() {
                     <Icon as={ArrowLeftIcon} size="xl" color="white" />
                 </TouchableOpacity>
                 <Box style={styles.headerTitleContainer}>
-                    <Text style={styles.header}>{data.headerTitle}</Text>
+                    <Text style={styles.header}>{data ? data.headerTitle : ''}</Text>
                 </Box>
             </Box>
 
@@ -194,7 +190,7 @@ export default function Home() {
             <Box style={styles.itemContainer}>
                 <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>Items</Text>
 
-                {data.items.map((item, index) => (
+                {data && data.items.map((item, index) => (
                     <Box style={styles.itemRow} key={index}>
                         <Checkbox
                             size="lg"
@@ -204,7 +200,7 @@ export default function Home() {
                             <CheckboxIndicator>
                                 <CheckboxIcon as={CheckIcon} />
                             </CheckboxIndicator>
-                            <CheckboxLabel>{item.name}</CheckboxLabel>
+                            <CheckboxLabel>{item.name} <Text style={{fontSize: 12, color: 'grey'}}>x{item.quantity}</Text></CheckboxLabel>
                         </Checkbox>
                         <Text style={styles.priceText}>₱{item.price}</Text>
                     </Box>
@@ -212,7 +208,7 @@ export default function Home() {
 
                 <Box style={styles.totalRow}>
                     <Text style={{ fontSize: 16, fontWeight: "600" }}>Total</Text>
-                    <Text style={{ fontSize: 16, fontWeight: "600", color: "#333" }}>₱{data.total || "0.00"}</Text>
+                    <Text style={{ fontSize: 16, fontWeight: "600", color: "#333" }}>₱{data ? data.total : "0.00"}</Text>
                 </Box>
             </Box>
 
@@ -221,15 +217,15 @@ export default function Home() {
                 <Text style={{ fontSize: 18, fontWeight: "600", marginBottom: 10 }}>List Details</Text>
                 <Box style={styles.detailRow}>
                     <Text style={styles.detailLabel}>Created</Text>
-                    <Text style={styles.detailValue}>{data.details.created}</Text>
+                    <Text style={styles.detailValue}>{data ? data.details.created : ''}</Text>
                 </Box>
                 <Box style={styles.detailRow}>
                     <Text style={styles.detailLabel}>Last Updated</Text>
-                    <Text style={styles.detailValue}>{data.details.lastUpdated}</Text>
+                    <Text style={styles.detailValue}>{data ? data.details.lastUpdated: ''}</Text>
                 </Box>
                 <Box style={styles.detailRow}>
                     <Text style={styles.detailLabel}>Items Completed</Text>
-                    <Text style={styles.detailValue}>{data.details.itemsCompleted} / {data.items.length}</Text>
+                    <Text style={styles.detailValue}>{data ? data.details.itemsCompleted : ''} / {data ? data.items.length : ''}</Text>
                 </Box>
             </Box>
         </ScrollView>

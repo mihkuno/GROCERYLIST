@@ -104,6 +104,346 @@ const queryDB = (query, params = []) =>
   
 
 
+  
+  app.post('/lists/detail', async (req, res) => {
+    try {
+      const { id, email, password, listId } = req.body;
+  
+      // Validation: Check for required fields
+      if (!id || !email || !password || !listId) {
+        res.status(400).json({ error: 'Missing required fields (id, email, password, listId)' });
+        return;
+      }
+  
+      // Verify the user
+      const user = await queryDB(
+        'SELECT id FROM `User` WHERE id = ? AND email = ? AND password = ?',
+        [id, email, password]
+      );
+  
+      if (user.length === 0) {
+        res.status(400).json({ error: 'User not found or invalid credentials' });
+        return;
+      }
+  
+      // Get the list details and items
+      const listDetails = await queryDB(
+        `SELECT 
+           L.id AS listId,
+           L.name AS headerTitle, 
+           DATE_FORMAT(L.created_at, '%M %d, %Y') AS created, 
+           DATE_FORMAT(L.updated_at, '%M %d, %Y') AS lastUpdated,
+           COUNT(I.id) AS totalItems,
+           SUM(I.is_checked) AS itemsCompleted
+         FROM List L
+         LEFT JOIN Item I ON L.id = I.list_id
+         WHERE L.id = ? AND L.user_id = ?
+         GROUP BY L.id`,
+        [listId, id]
+      );
+  
+      if (listDetails.length === 0) {
+        res.status(404).json({ error: 'List not found or does not belong to the user' });
+        return;
+      }
+  
+      const items = await queryDB(
+        `SELECT 
+           I.id AS itemId,
+           I.name,
+           I.quantity,
+           FORMAT(I.price, 2) AS price,
+           I.is_checked AS isChecked
+         FROM Item I
+         WHERE I.list_id = ?`,
+        [listId]
+      );
+  
+      const response = {
+        id: id,  // User ID
+        headerTitle: listDetails[0].headerTitle,
+        items: items.map(item => ({
+          id: item.itemId,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          isChecked: item.isChecked
+        })),
+        details: {
+          id: listDetails[0].listId,  // List ID
+          created: listDetails[0].created,
+          lastUpdated: listDetails[0].lastUpdated,
+          itemsCompleted: listDetails[0].itemsCompleted || 0
+        }
+      };
+  
+      res.json(response);
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+
+
+  app.put('/lists/update', async (req, res) => {
+    try {
+      const { id, email, password, details, headerTitle, items } = req.body;
+      
+      // Extract listId from details
+      const listId = details?.id;
+  
+      // Validation: Check for required fields
+      if (!id || !email || !password || !listId || !headerTitle || !Array.isArray(items)) {
+        res.status(400).json({ error: 'Missing required fields or invalid data format' });
+        return;
+      }
+  
+      // Verify the user
+      const user = await queryDB(
+        'SELECT id FROM `User` WHERE id = ? AND email = ? AND password = ?',
+        [id, email, password]
+      );
+  
+      if (user.length === 0) {
+        res.status(400).json({ error: 'User not found or invalid credentials' });
+        return;
+      }
+  
+      // Check if the list exists and belongs to the user
+      const listExists = await queryDB(
+        'SELECT id FROM List WHERE id = ? AND user_id = ?',
+        [listId, id]
+      );
+  
+      if (listExists.length === 0) {
+        res.status(404).json({ error: 'List not found or does not belong to the user' });
+        return;
+      }
+  
+      // Update the list name and updated_at timestamp
+      await queryDB(
+        'UPDATE List SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND user_id = ?',
+        [headerTitle, listId, id]
+      );
+  
+      // Update or insert items
+      for (const item of items) {
+        const { id: itemId, name, quantity, price, isChecked } = item;
+  
+        if (!itemId) {
+          // Insert new item
+          await queryDB(
+            'INSERT INTO Item (list_id, name, quantity, price, is_checked, created_at) VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)',
+            [listId, name, quantity, price, isChecked ? 1 : 0]
+          );
+        } else {
+          // Update existing item
+          await queryDB(
+            'UPDATE Item SET name = ?, quantity = ?, price = ?, is_checked = ? WHERE id = ? AND list_id = ?',
+            [name, quantity, price, isChecked ? 1 : 0, itemId, listId]
+          );
+        }
+      }
+  
+      // Get the updated list details and items to return
+      const listDetails = await queryDB(
+        `SELECT 
+           L.id AS listId,
+           L.name AS headerTitle, 
+           DATE_FORMAT(L.created_at, '%M %d, %Y') AS created, 
+           DATE_FORMAT(L.updated_at, '%M %d, %Y') AS lastUpdated,
+           COUNT(I.id) AS totalItems,
+           SUM(I.is_checked) AS itemsCompleted
+         FROM List L
+         LEFT JOIN Item I ON L.id = I.list_id
+         WHERE L.id = ? AND L.user_id = ?
+         GROUP BY L.id`,
+        [listId, id]
+      );
+  
+      const itemsData = await queryDB(
+        `SELECT 
+           I.id AS itemId,
+           I.name,
+           I.quantity,
+           FORMAT(I.price, 2) AS price,
+           I.is_checked AS isChecked
+         FROM Item I
+         WHERE I.list_id = ?`,
+        [listId]
+      );
+  
+      const response = {
+        id: id,  // User ID
+        headerTitle: listDetails[0].headerTitle,
+        items: itemsData.map(item => ({
+          id: item.itemId,
+          name: item.name,
+          quantity: item.quantity,
+          price: item.price,
+          isChecked: item.isChecked
+        })),
+        details: {
+          id: listDetails[0].listId,  // List ID
+          created: listDetails[0].created,
+          lastUpdated: listDetails[0].lastUpdated,
+          itemsCompleted: listDetails[0].itemsCompleted || 0
+        }
+      };
+  
+      res.status(201).json({ message: 'List updated successfully', response });
+    } catch (err) {
+      res.status(500).json({ error: err.message });
+    }
+  });
+  
+  
+  
+  // POST request to add multiple items to a user's list
+app.post('/items/add', async (req, res) => {
+    const { user_id, email, password, list_id, items } = req.body;
+  
+    // Validate required fields
+    if (!user_id || !email || !password || !list_id || !Array.isArray(items) || items.length === 0) {
+      return res.status(400).json({ error: 'Missing required fields or invalid items list' });
+    }
+  
+    try {
+      // Step 1: Validate user credentials (fetch user by email)
+      const results = await queryDB('SELECT * FROM User WHERE email = ?', [email]);
+  
+      if (results.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      const user = results[0];
+  
+      // Step 2: Compare password (without hashing)
+      if (user.password !== password) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+  
+      // Step 3: Check if the user is authorized to add items to the list
+      if (user.id !== user_id) {
+        return res.status(403).json({ error: 'Unauthorized action' });
+      }
+  
+      // Step 4: Prepare multiple items to insert into the database
+      const query = 'INSERT INTO Item (list_id, name, quantity, price, is_checked) VALUES ?';
+      const values = items.map(item => [list_id, item.name, item.quantity, item.price, item.is_checked]);
+  
+      // Step 5: Insert items into the database
+      const result = await queryDB(query, [values]);
+  
+      return res.status(201).json({ message: 'Items added successfully', insertedCount: result.affectedRows });
+    } catch (err) {
+      return res.status(500).json({ error: 'Database error', details: err.message });
+    }
+  });
+  
+
+// DELETE request to remove multiple items from a user's list
+app.delete('/items/delete', async (req, res) => {
+    const { user_id, email, password, item_ids } = req.body;
+ 
+
+    // Validate required fields
+    if (!user_id || !email || !password || !item_ids || !Array.isArray(item_ids) || item_ids.length === 0) {
+      return res.status(400).json({ error: 'Missing required fields or invalid item_ids' });
+    }
+  
+    try {
+      // Step 1: Validate user credentials (fetch user by email)
+      const results = await queryDB('SELECT * FROM User WHERE email = ?', [email]);
+  
+      if (results.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      const user = results[0];
+  
+      // Step 2: Compare password (without hashing)
+      if (user.password !== password) {
+        return res.status(401).json({ error: 'Invalid credentials' });
+      }
+  
+      // Step 3: Check if the user is authorized to delete the items
+      if (user.id !== user_id) {
+        return res.status(403).json({ error: 'Unauthorized action' });
+      }
+  
+      // Step 4: Delete items (Use IN clause to delete multiple items)
+      const deleteQuery = 'DELETE FROM Item WHERE id IN (?) AND list_id IN (SELECT id FROM List WHERE user_id = ?)';
+      const deleteResult = await queryDB(deleteQuery, [item_ids, user_id]);
+  
+      // Step 5: Check if the items were deleted
+      if (deleteResult.affectedRows === 0) {
+        return res.status(404).json({ error: 'Items not found or user not authorized to delete' });
+      }
+  
+      return res.status(200).json({ message: 'Items deleted successfully' });
+    } catch (err) {
+      return res.status(500).json({ error: 'Database error', details: err.message });
+    }
+  });
+
+  
+
+  app.post('/lists/create', async (req, res) => {
+    const { user_id, email, password, list_name, items } = req.body;
+  
+    // Validate required fields
+    if (!user_id || !email || !password || !list_name) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+  
+    try {
+      // Step 1: Validate user credentials
+      const userResults = await queryDB('SELECT * FROM User WHERE email = ?', [email]);
+  
+      if (userResults.length === 0) {
+        return res.status(404).json({ error: 'User not found' });
+      }
+  
+      const user = userResults[0];
+  
+      // Step 2: Compare password
+      if (user.id !== user_id) {
+        return res.status(403).json({ error: 'Unauthorized user' });
+      }
+  
+      // Step 3: Create the list
+      const listQuery = 'INSERT INTO List (user_id, name) VALUES (?, ?)';
+      const listValues = [user_id, list_name];
+      const listResult = await queryDB(listQuery, listValues);
+  
+      // Get the newly created list id
+      const listId = listResult.insertId;
+  
+      // Step 4: Insert items if provided
+      if (items && Array.isArray(items) && items.length > 0) {
+        const itemQuery = 'INSERT INTO Item (list_id, name, quantity, price, is_checked) VALUES ?';
+        const itemValues = items.map(item => [
+          listId, 
+          item.name, 
+          item.quantity || 1, // Default to 1 if quantity is not provided
+          item.price || 0.0,  // Default to 0.0 if price is not provided
+          item.is_checked || false  // Default to false if is_checked is not provided
+        ]);
+  
+        await queryDB(itemQuery, [itemValues]);
+      }
+  
+      return res.status(201).json({ message: 'List created successfully', listId: listId });
+  
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Database error' });
+    }
+  });
+  
+
+
+
 // Create a new user
 app.post('/users', async (req, res) => {
   try {
